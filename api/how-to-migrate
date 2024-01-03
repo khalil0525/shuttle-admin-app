@@ -1,0 +1,2 @@
+place creds for production server in config.json
+npx sequelize-cli db:migrate --env production
