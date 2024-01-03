@@ -3,7 +3,10 @@ const cors = require('cors');
 const corsOptions = {
   origin:
     process.env.env === 'production'
-      ? ['https://bus-routing-portal-prod-18d532a8f2ff.herokuapp.com']
+      ? [
+          'https://bus-routing-portal-prod-18d532a8f2ff.herokuapp.com',
+          'https://passenger-site.netlify.app',
+        ]
       : ['http://localhost:3000', 'http://localhost:3001'],
 };
 
