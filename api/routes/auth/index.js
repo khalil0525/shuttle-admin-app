@@ -246,14 +246,21 @@ router.post('/user/create', async (req, res) => {
         await invite.destroy();
       }
 
-      const newToken = jwt.sign(
-        { id: user.dataValues.id },
-        process.env.SESSION_SECRET,
-        { expiresIn: 86400 }
+      res.setHeader(
+        'Set-Cookie',
+        cookie.serialize('token', token, {
+          httpOnly: true,
+          maxAge: 7 * 24 * 60 * 60,
+          sameSite: 'lax',
+          secure: process.env.NODE_ENV === 'production',
+          domain: 'bus-routing-portal-prod-18d532a8f2ff.herokuapp.com',
+        })
       );
-      return res.json({
+      const origin = req.get('origin');
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.json({
         ...user.dataValues,
-        token: newToken,
+        token,
       });
     } catch (error) {
       console.error('Error verifying JWT:', error);
@@ -333,7 +340,7 @@ router.post('/login', async (req, res, next) => {
           maxAge: 7 * 24 * 60 * 60,
           sameSite: 'lax',
           secure: process.env.NODE_ENV === 'production',
-          domain: 'occt-dispatch-website-006ef2bb4dfc.herokuapp.com',
+          domain: 'bus-routing-portal-prod-18d532a8f2ff.herokuapp.com',
         })
       );
       const origin = req.get('origin');
