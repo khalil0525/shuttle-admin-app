@@ -44,8 +44,8 @@ To install and run the OCCT Shuttle Status Update Application locally:
 
 1. Clone the repository:
 
-git clone https://github.com/khalil0525/shuttle-status-app.git
-cd shuttle-status-app
+git clone https://github.com/khalil0525/shuttle-admin-app.git
+cd shuttle-admin-app
 
 2. Install backend dependencies:
 
