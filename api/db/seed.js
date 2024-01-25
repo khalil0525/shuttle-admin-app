@@ -1,25 +1,14 @@
 const db = require('./db');
 const { User, Route } = require('./models');
-require('dotenv').config();
 
 async function seed() {
+  console.log(process.env.DB_DATABASE);
   await db.sync({ force: true });
   console.log('db synced!');
   const PrimaryAdmin = await User.create({
-    email: 'collinskhalil@hotmail.com',
-    password: 'gggabc123',
+    email: 'tech@occtransport.org',
+    password: 'OCCTtech986@!',
     isAdmin: true,
-  });
-
-  const TesterAdmin = await User.create({
-    email: 'testeradmin@test.com',
-    password: 'gggabc123',
-    isAdmin: true,
-  });
-  const TesterUser = await User.create({
-    email: 'testeruser@test.com',
-    password: 'gggabc123',
-    isAdmin: false,
   });
 }
 

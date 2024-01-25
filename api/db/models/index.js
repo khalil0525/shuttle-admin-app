@@ -11,7 +11,7 @@ const Image = require('./image');
 const TrainerResource = require('./trainerResource');
 const TrainerResourceAttachment = require('./trainerResourceAttachment');
 const DispatchRouteLog = require('./dispatchRouteLog');
-
+const UserDispatchFollowUp = require('./userDispatchFollowUp');
 Route.hasMany(ServiceUpdate, { onDelete: 'CASCADE' });
 ServiceUpdate.belongsTo(Route);
 
@@ -53,6 +53,14 @@ Route.hasMany(DispatchRouteLog, {
 DispatchRouteLog.belongsTo(Route, {
   foreignKey: 'routeId',
 });
+User.belongsToMany(DispatchReport, {
+  through: UserDispatchFollowUp,
+  foreignKey: 'userId',
+});
+DispatchReport.belongsToMany(User, {
+  through: UserDispatchFollowUp,
+  foreignKey: 'dispatchReportId',
+});
 
 module.exports = {
   User,
@@ -68,4 +76,5 @@ module.exports = {
   TrainerResource,
   TrainerResourceAttachment,
   DispatchRouteLog,
+  UserDispatchFollowUp,
 };

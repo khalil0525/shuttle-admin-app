@@ -1,13 +1,12 @@
 const cors = require('cors');
 
 const corsOptions = {
-  origin:
-    process.env.env === 'production'
-      ? [
-          'https://bus-routing-portal-prod-18d532a8f2ff.herokuapp.com',
-          'https://passenger-site.netlify.app',
-        ]
-      : ['http://localhost:3000', 'http://localhost:3001'],
+  origin: [
+    'https://occtransport.org',
+    'https://occt-dispatch-website-006ef2bb4dfc.herokuapp.com',
+    'http://localhost:3000',
+    'https://portal.occtransport.org',
+  ],
 };
 
 const routesWithoutCredentials = [

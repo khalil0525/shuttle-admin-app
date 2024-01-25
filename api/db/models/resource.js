@@ -1,7 +1,7 @@
-const { Sequelize } = require('sequelize');
-const db = require('../db');
+const { Sequelize } = require("sequelize");
+const db = require("../db");
 
-const Resource = db.define('resource', {
+const Resource = db.define("resource", {
   question: {
     type: Sequelize.STRING,
     allowNull: false,
@@ -23,12 +23,12 @@ const Resource = db.define('resource', {
 });
 
 Resource.beforeCreate(async (resource) => {
-  const lastOrder = await Resource.max('order');
+  const lastOrder = await Resource.max("order");
   resource.order = lastOrder !== null ? lastOrder + 1 : 1;
 });
 
 Resource.beforeUpdate(async (resource, options) => {
-  if (resource.changed('enabled') && !resource.enabled) {
+  if (resource.changed("enabled") && !resource.enabled) {
     const resourcesToUpdate = await Resource.findAll({
       where: {
         order: {
@@ -59,7 +59,7 @@ Resource.deleteResource = async (resourceId) => {
           [Sequelize.Op.ne]: orderToDelete,
         },
       },
-      order: [['order', 'ASC']],
+      order: [["order", "ASC"]],
     });
 
     let currentOrder = 1;

@@ -12,6 +12,10 @@ const Invite = db.define('invite', {
       isEmail: true,
     },
   },
+  name: {
+    type: Sequelize.STRING,
+    allowNull: true,
+  },
   lastEmailSent: {
     type: Sequelize.DATE,
     allowNull: true,
