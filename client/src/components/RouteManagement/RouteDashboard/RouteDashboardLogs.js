@@ -91,7 +91,7 @@ const RouteDashboardLogs = () => {
             <>
               <Tr key={`log-${index}`}>
                 <Td>{log.route.name}</Td>
-                <Td>{log.user.email}</Td>
+                <Td>{log.user.name ? log.user.name : 'NAME REQUIRED'}</Td>
 
                 <Td>{log.entityType}</Td>
                 <Td>{log.actionType}</Td>

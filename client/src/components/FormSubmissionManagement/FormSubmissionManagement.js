@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Stack,
   Heading,
@@ -10,43 +10,57 @@ import {
   TabList,
   Tab,
   Tabs,
-} from '@chakra-ui/react';
+} from "@chakra-ui/react";
 
-import axios from 'axios';
-import ManualAddFullRunsModal from './ManualAddFullRunsModal';
-import ConfirmDeletionModal from './ConfirmDeletionModal';
-import ExportCSVModal from './ExportCSVModal';
-import TableComponent from './ReportTable';
+import axios from "axios";
+import ManualAddFullRunsModal from "./ManualAddFullRunsModal";
+import ConfirmDeletionModal from "./ConfirmDeletionModal";
+import ExportCSVModal from "./ExportCSVModal";
+import TableComponent from "./ReportTable";
+import ConfirmFollowUpModal from "./ConfirmFollowUpModal";
 
 const FormSubmissionManagement = ({ user }) => {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('reports');
+  const [activeTab, setActiveTab] = useState("reports");
   const [reports, setReports] = useState([]);
   const [fullRuns, setFullRuns] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalData, setModalData] = useState({
-    name: '',
-    date: '',
-    time: '',
+    name: "",
+    date: "",
+    time: "",
     passengersLeftBehind: 0,
   });
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isFollowUpModalOpen, setIsFollowUpModalOpen] = useState(false);
+  const [followUpItemId, setFollowUpItemId] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
-
+  const [isProcessingResolve, setIsProcessingResolve] = useState(false);
+  const [flashing, setFlashing] = useState(false);
+  const [change, setChange] = useState(null);
   useEffect(() => {
     const fetchData = async () => {
       try {
         const reportsData = await getDispatchReports();
-        const fullRunsData = await getFullRuns();
         setReports(reportsData);
-        setFullRuns(fullRunsData);
+
+        const fullRunsData = await getFullRuns();
+
+        const sortedFullRuns = fullRunsData.sort((a, b) => {
+          const dateA = new Date(`${a.date} ${a.time}`);
+          const dateB = new Date(`${b.date} ${b.time}`);
+          return dateB - dateA;
+        });
+
+        setFullRuns(sortedFullRuns);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching data:", error);
       }
     };
 
     fetchData();
   }, []);
+
   const getDispatchReports = async () => {
     try {
       const response = await axios.get(`/api/reports`);
@@ -68,7 +82,7 @@ const FormSubmissionManagement = ({ user }) => {
     let data;
     let headers;
 
-    if (activeTab === 'reports') {
+    if (activeTab === "reports") {
       if (startDate && endDate) {
         const start = new Date(startDate);
         const end = new Date(endDate);
@@ -78,7 +92,7 @@ const FormSubmissionManagement = ({ user }) => {
             return reportDate >= start && reportDate <= end;
           })
           .map((report) => ({
-            userEmail: report.userEmail,
+            userName: report.creatorUser.userName,
             dateOfDispatch: report.dateOfDispatch,
             timeOfDispatchStart: report.timeOfDispatchStart,
             timeOfDispatchEnd: report.timeOfDispatchEnd,
@@ -89,7 +103,7 @@ const FormSubmissionManagement = ({ user }) => {
           }));
       } else {
         data = reports.map((report) => ({
-          userEmail: report.userEmail,
+          userName: report.creatorUser.userName,
           dateOfDispatch: report.dateOfDispatch,
           timeOfDispatchStart: report.timeOfDispatchStart,
           timeOfDispatchEnd: report.timeOfDispatchEnd,
@@ -101,14 +115,14 @@ const FormSubmissionManagement = ({ user }) => {
       }
 
       headers = [
-        'User',
-        'Dispatch Date',
-        'Dispatch Time (Start)',
-        'Dispatch Time (End)',
-        'On-Call Dispatch Experience',
-        'Comments',
-        'Any full runs?',
-        'Requires follow up?',
+        "User",
+        "Dispatch Date",
+        "Dispatch Time (Start)",
+        "Dispatch Time (End)",
+        "On-Call Dispatch Experience",
+        "Comments",
+        "Any full runs?",
+        "Requires follow up?",
       ];
     } else {
       if (startDate && endDate) {
@@ -121,7 +135,7 @@ const FormSubmissionManagement = ({ user }) => {
             return runDate >= start && runDate <= end;
           })
           .map((run) => ({
-            userEmail: run.userEmail,
+            userName: run.user.name,
             date: run.date,
             time: run.time,
             name: run.name,
@@ -129,7 +143,7 @@ const FormSubmissionManagement = ({ user }) => {
           }));
       } else {
         data = fullRuns.map((run) => ({
-          user: run.userEmail,
+          user: run.user.name,
           date: run.date,
           time: run.time,
           name: run.name,
@@ -138,11 +152,11 @@ const FormSubmissionManagement = ({ user }) => {
       }
 
       headers = [
-        'User',
-        'Date',
-        'Time of Run',
-        'Run Name',
-        'Num Passengers Left Behind',
+        "User",
+        "Date",
+        "Time of Run",
+        "Run Name",
+        "Num Passengers Left Behind",
       ];
     }
 
@@ -158,12 +172,12 @@ const FormSubmissionManagement = ({ user }) => {
 
   const downloadCSV = (data, filename) => {
     const csvContent =
-      'data:text/csv;charset=utf-8,' +
-      data.map((row) => Object.values(row).join(',')).join('\n');
+      "data:text/csv;charset=utf-8," +
+      data.map((row) => Object.values(row).join(",")).join("\n");
     const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', filename);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", filename);
     document.body.appendChild(link);
     link.click();
   };
@@ -177,8 +191,46 @@ const FormSubmissionManagement = ({ user }) => {
     }
   };
 
+  const handleResolveFollowUp = async (rowId) => {
+    try {
+      setIsProcessingResolve(true);
+
+      const resolvedByUserId = user.id;
+
+      const { data } = await axios.post(`/api/reports/resolve/${rowId}`);
+
+      if (data && data.dispatchReport) {
+        const updatedDispatchReport = data.dispatchReport;
+
+        const isResolvedByCurrentUser =
+          updatedDispatchReport.resolvedBy &&
+          updatedDispatchReport.resolvedBy.length > 0 &&
+          updatedDispatchReport.resolvedBy[0].id === resolvedByUserId;
+
+        setReports((prev) => {
+          const copyReports = prev.map((report) =>
+            report.id === updatedDispatchReport.id
+              ? { ...report, ...updatedDispatchReport }
+              : report
+          );
+          return copyReports;
+        });
+
+        if (isResolvedByCurrentUser) {
+          setFlashing(false);
+        } else {
+          setFlashing(true);
+        }
+
+        setIsProcessingResolve(false);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const renderYesNo = (value) => {
-    return <Text>{value ? 'Yes' : 'No'}</Text>;
+    return <Text>{value ? "Yes" : "No"}</Text>;
   };
   const openModal = () => {
     setIsModalOpen(true);
@@ -198,10 +250,25 @@ const FormSubmissionManagement = ({ user }) => {
   const handleModalSubmit = async () => {
     try {
       const data = await createFullRun(modalData);
-      setFullRuns((prev) => [...prev, { ...data, userEmail: user.email }]);
+      setFullRuns((prev) => {
+        const newFullRun = {
+          ...data,
+          user: { name: user.name, email: user.email },
+        };
+
+        const updatedFullRuns = [...prev, newFullRun];
+
+        const sortedFullRuns = updatedFullRuns.sort((a, b) => {
+          const dateA = new Date(`${a.date} ${a.time}`);
+          const dateB = new Date(`${b.date} ${b.time}`);
+          return dateB - dateA;
+        });
+
+        return sortedFullRuns;
+      });
       closeModal();
     } catch (error) {
-      console.error('Error creating full run:', error);
+      console.error("Error creating full run:", error);
     }
   };
   const openDeleteModal = (id) => {
@@ -234,30 +301,30 @@ const FormSubmissionManagement = ({ user }) => {
 
   const handleDelete = async () => {
     try {
-      itemToDelete && activeTab === 'runs'
+      itemToDelete && activeTab === "runs"
         ? await deleteFullRun(itemToDelete)
         : await deleteDispatchReport(itemToDelete);
       closeDeleteModal();
     } catch (error) {
-      console.error('Error deleting item:', error);
+      console.error("Error deleting item:", error);
     }
   };
   const columnsReports = useMemo(
     () => [
-      { Header: 'User', accessor: 'userEmail' },
-      { Header: 'Dispatch Date ', accessor: 'dateOfDispatch' },
-      { Header: 'Dispatch Time (Start)', accessor: 'timeOfDispatchStart' },
-      { Header: 'Dispatch Time (End)', accessor: 'timeOfDispatchEnd' },
-      { Header: 'On-Call Dispatch Experience', accessor: 'onCallExperience' },
-      { Header: 'Comments', accessor: 'additionalComments' },
+      { Header: "User", accessor: "creatorUser.name" },
+      { Header: "Dispatch Date ", accessor: "dateOfDispatch" },
+      { Header: "Dispatch Time (Start)", accessor: "timeOfDispatchStart" },
+      { Header: "Dispatch Time (End)", accessor: "timeOfDispatchEnd" },
+      { Header: "On-Call Dispatch Experience", accessor: "onCallExperience" },
+      { Header: "Comments", accessor: "additionalComments" },
       {
-        Header: 'Any full runs?',
-        accessor: 'hasFullRuns',
+        Header: "Any full runs?",
+        accessor: "hasFullRuns",
         Cell: ({ value }) => renderYesNo(value),
       },
       {
-        Header: 'Requires follow up?',
-        accessor: 'requiresFollowUp',
+        Header: "Requires follow up?",
+        accessor: "requiresFollowUp",
         Cell: ({ value }) => renderYesNo(value),
       },
     ],
@@ -266,20 +333,20 @@ const FormSubmissionManagement = ({ user }) => {
 
   const columnsFullRuns = useMemo(
     () => [
-      { Header: 'User', accessor: 'userEmail' },
-      { Header: 'Date', accessor: 'date' },
-      { Header: 'Time of Run', accessor: 'time' },
-      { Header: 'Run Name', accessor: 'name' },
+      { Header: "User", accessor: "user.name" },
+      { Header: "Date", accessor: "date" },
+      { Header: "Time of Run", accessor: "time" },
+      { Header: "Run Name", accessor: "name" },
       {
-        Header: '# of Passengers Left Behind',
-        accessor: 'passengersLeftBehind',
+        Header: "# of Passengers Left Behind",
+        accessor: "passengersLeftBehind",
       },
     ],
     []
   );
 
-  const data = activeTab === 'reports' ? reports : fullRuns;
-  const columns = activeTab === 'reports' ? columnsReports : columnsFullRuns;
+  const data = activeTab === "reports" ? reports : fullRuns;
+  const columns = activeTab === "reports" ? columnsReports : columnsFullRuns;
 
   return (
     <Stack
@@ -299,40 +366,22 @@ const FormSubmissionManagement = ({ user }) => {
         isFitted
         variant="enclosed-colored"
         colorScheme="teal"
-        onChange={(index) => setActiveTab(index === 0 ? 'reports' : 'runs')}
+        onChange={(index) => setActiveTab(index === 0 ? "reports" : "runs")}
         w="100%">
         <Flex
-          direction={{ base: 'column', md: 'row' }}
+          direction={{ base: "column", md: "row" }}
           align="center"
           justify="start"
           mt={4}
           w="100%">
-          {/* <Button
-            variant={activeTab === 'reports' ? 'solid' : 'outline'}
-            onClick={() => setActiveTab('reports')}
-            mb={{ base: 2, md: 0 }}
-            mr={{ base: 0, md: 2 }}
-            colorScheme={activeTab === 'reports' ? 'teal' : 'gray'}>
-            View Dispatch Reports
-          </Button>
-
-          <Button
-            variant={activeTab === 'runs' ? 'solid' : 'outline'}
-            onClick={() => setActiveTab('runs')}
-            mb={{ base: 2, md: 0 }}
-            mr={{ base: 0, md: 2 }}
-            colorScheme={activeTab === 'runs' ? 'teal' : 'gray'}>
-            View Full Runs
-          </Button> */}
-
           <TabList>
             <Tab
-              style={{ width: '200px' }}
+              style={{ width: "200px" }}
               bgColor="compBg">
               View Dispatch Reports
             </Tab>
             <Tab
-              style={{ width: '200px' }}
+              style={{ width: "200px" }}
               bgColor="compBg">
               View Full Runs
             </Tab>
@@ -342,7 +391,7 @@ const FormSubmissionManagement = ({ user }) => {
         <Box
           overflowX="auto"
           maxWidth="100%"
-          style={{ overflowX: 'auto' }}
+          style={{ overflowX: "auto" }}
           color="text">
           <Heading
             as="h4"
@@ -350,19 +399,26 @@ const FormSubmissionManagement = ({ user }) => {
             textAlign="center"
             textDecoration="underline"
             mb={4}>
-            {activeTab === 'reports' ? 'Dispatch Reports ' : 'Full Runs '}
+            {activeTab === "reports" ? "Dispatch Reports " : "Full Runs "}
           </Heading>
           <TableComponent
             columns={columns}
             data={data}
             onDelete={openDeleteModal}
+            isProcessingResolve={isProcessingResolve}
+            user={user}
+            setFollowUpItemId={setFollowUpItemId}
+            setIsFollowUpModalOpen={setIsFollowUpModalOpen}
+            setFlashing={setFlashing}
+            flashing={flashing}
+            setChange={setChange}
           />
         </Box>
 
         <Flex
           justifyContent="center"
           alignItems="center"
-          direction={{ base: 'column', md: 'column' }}
+          direction={{ base: "column", md: "column" }}
           gap="12px"
           mt={8}>
           <Button
@@ -371,7 +427,7 @@ const FormSubmissionManagement = ({ user }) => {
             variant="solid">
             Convert to Downloadable Spreadsheet
           </Button>
-          {activeTab === 'runs' && (
+          {activeTab === "runs" && (
             <Button
               colorScheme="blue"
               onClick={openModal}>
@@ -397,6 +453,16 @@ const FormSubmissionManagement = ({ user }) => {
         isOpen={isDeleteModalOpen}
         onClose={closeDeleteModal}
         handleDelete={handleDelete}
+      />
+      <ConfirmFollowUpModal
+        isOpen={isFollowUpModalOpen}
+        onClose={() => setIsFollowUpModalOpen(false)}
+        user={user}
+        handleConfirmFollowUp={async () => {
+          await handleResolveFollowUp(followUpItemId);
+          setIsFollowUpModalOpen(false);
+        }}
+        change={change}
       />
     </Stack>
   );

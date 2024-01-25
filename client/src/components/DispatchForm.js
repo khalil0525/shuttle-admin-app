@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Heading,
@@ -10,32 +10,32 @@ import {
   Button,
   Text,
   Flex,
-} from '@chakra-ui/react';
-import axios from 'axios';
-import { useSnackbar } from '../context/SnackbarProvider';
+} from "@chakra-ui/react";
+import axios from "axios";
+import { useSnackbar } from "../context/SnackbarProvider";
 
 const OnCallExperienceOptions = {
-  NothingUneventful: 'Nothing/Entirely Uneventful',
-  LateToBlock: 'Driver(s) Late to Block',
-  CompletelyAbsent: 'Driver(s) Completely Absent to Block',
-  Accident: 'Accident',
-  Breakdown: 'Breakdown',
-  Injury: 'Injury',
-  UnprofessionalConduct: 'Unprofessional Driver Conduct',
-  CanceledLateRuns: 'Canceled/Very Late Runs',
-  OtherIssues: 'Other Issue(s)',
+  NothingUneventful: "Nothing/Entirely Uneventful",
+  LateToBlock: "Driver(s) Late to Block",
+  CompletelyAbsent: "Driver(s) Completely Absent to Block",
+  Accident: "Accident",
+  Breakdown: "Breakdown",
+  Injury: "Injury",
+  UnprofessionalConduct: "Unprofessional Driver Conduct",
+  CanceledLateRuns: "Canceled/Very Late Runs",
+  OtherIssues: "Other Issue(s)",
 };
 
 const DispatchForm = () => {
   const { showSuccessToast, showErrorToast } = useSnackbar();
-  const [dateOfDispatch, setDateOfDispatch] = useState('');
-  const [timeOfDispatchStart, setTimeOfDispatchStart] = useState('');
-  const [timeOfDispatchEnd, setTimeOfDispatchEnd] = useState('');
-  const [onCallExperience, setOnCallExperience] = useState('');
-  const [additionalInfo, setAdditionalInfo] = useState('');
-  const [hasFullRuns, setHasFullRuns] = useState(false);
+  const [dateOfDispatch, setDateOfDispatch] = useState(null);
+  const [timeOfDispatchStart, setTimeOfDispatchStart] = useState(null);
+  const [timeOfDispatchEnd, setTimeOfDispatchEnd] = useState(null);
+  const [onCallExperience, setOnCallExperience] = useState("");
+  const [additionalInfo, setAdditionalInfo] = useState("");
+  const [hasFullRuns, setHasFullRuns] = useState("");
   const [fullRuns, setFullRuns] = useState([]);
-  const [requiresFollowUp, setRequiresFollowUp] = useState(false);
+  const [requiresFollowUp, setRequiresFollowUp] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleDateChange = (e) => {
@@ -43,26 +43,26 @@ const DispatchForm = () => {
   };
 
   const handleTimeChange = (field, e) => {
-    if (field === 'start') {
+    if (field === "start") {
       setTimeOfDispatchStart(e.target.value);
-    } else if (field === 'end') {
+    } else if (field === "end") {
       setTimeOfDispatchEnd(e.target.value);
     }
   };
 
   const handleOnCallExperienceChange = (e) => {
     setOnCallExperience(e.target.value);
-    setAdditionalInfo('');
+    setAdditionalInfo("");
   };
 
   const handleFullRunsChange = (e) => {
-    setHasFullRuns(e.target.value === 'Yes');
+    setHasFullRuns(e.target.value);
   };
 
   const handleAddFullRun = () => {
     setFullRuns([
       ...fullRuns,
-      { name: '', passengersLeftBehind: '', time: '' },
+      { name: "", passengersLeftBehind: "", time: "" },
     ]);
   };
 
@@ -73,7 +73,7 @@ const DispatchForm = () => {
   };
 
   const handleRequiresFollowUpChange = (e) => {
-    setRequiresFollowUp(e.target.value === 'Yes');
+    setRequiresFollowUp(e.target.value);
   };
 
   const handleSubmit = async () => {
@@ -85,13 +85,13 @@ const DispatchForm = () => {
       !timeOfDispatchEnd ||
       !onCallExperience
     ) {
-      showErrorToast('Validation error: Please fill in all required fields');
+      showErrorToast("Validation error: Please fill in all required fields");
       setIsSubmitting(false);
       return;
     }
 
     try {
-      await axios.post('/api/reports', {
+      await axios.post("/api/reports", {
         dateOfDispatch,
         report: {
           timeOfDispatchStart,
@@ -104,26 +104,44 @@ const DispatchForm = () => {
         fullRuns,
       });
 
-      setDateOfDispatch('');
-      setTimeOfDispatchStart('');
-      setTimeOfDispatchEnd('');
-      setOnCallExperience('');
-      setAdditionalInfo('');
-      setHasFullRuns(false);
+      setDateOfDispatch(null);
+      setTimeOfDispatchStart(null);
+      setTimeOfDispatchEnd(null);
+      setOnCallExperience("");
+      setAdditionalInfo("");
+      setHasFullRuns("");
       setFullRuns([]);
-      setRequiresFollowUp(false);
-      showSuccessToast('Report successfully sent');
+      setRequiresFollowUp("");
+      showSuccessToast("Report successfully sent");
     } catch (error) {
-      console.error('Submission error:', error);
+      console.error("Submission error:", error);
       showErrorToast(error.response.data.error);
     } finally {
       setIsSubmitting(false);
     }
   };
+  const isSubmitButtonDisabled = () => {
+    return (
+      !dateOfDispatch ||
+      !timeOfDispatchStart ||
+      !timeOfDispatchEnd ||
+      !onCallExperience ||
+      (hasFullRuns &&
+        fullRuns.some(
+          (run) =>
+            !run.name ||
+            !run.time ||
+            run.passengersLeftBehind === "" ||
+            isNaN(run.passengersLeftBehind)
+        )) ||
+      requiresFollowUp === "" ||
+      hasFullRuns === ""
+    );
+  };
 
   return (
     <Box
-      maxW={{ base: '100%', md: '800px' }}
+      maxW={{ base: "100%", md: "800px" }}
       mx="auto"
       mt="8"
       p="4"
@@ -133,7 +151,7 @@ const DispatchForm = () => {
       color="text">
       <Heading
         mb="4"
-        fontSize={{ base: 'xl', md: '2xl' }}>
+        fontSize={{ base: "xl", md: "2xl" }}>
         Report
       </Heading>
       <FormControl
@@ -151,18 +169,18 @@ const DispatchForm = () => {
         mb="4"
         isRequired>
         <FormLabel fontSize="md">Time of Dispatch:</FormLabel>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <Input
             type="time"
             value={timeOfDispatchStart}
-            onChange={(e) => handleTimeChange('start', e)}
+            onChange={(e) => handleTimeChange("start", e)}
             colorScheme="teal"
           />
           <Text>to</Text>
           <Input
             type="time"
             value={timeOfDispatchEnd}
-            onChange={(e) => handleTimeChange('end', e)}
+            onChange={(e) => handleTimeChange("end", e)}
             colorScheme="teal"
           />
         </Box>
@@ -209,11 +227,11 @@ const DispatchForm = () => {
         </FormLabel>
         <Select
           placeholder="Select an option"
-          value={hasFullRuns ? 'Yes' : 'No'}
+          value={hasFullRuns}
           onChange={handleFullRunsChange}
           colorScheme="teal">
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
+          <option value={true}>Yes</option>
+          <option value={false}>No</option>
         </Select>
       </FormControl>
       {hasFullRuns && (
@@ -223,28 +241,28 @@ const DispatchForm = () => {
               key={index}
               mb="4">
               <FormLabel fontSize="md">{`Full Run #${index + 1}`}</FormLabel>
-              <Flex direction={{ base: 'column', md: 'row' }}>
+              <Flex direction={{ base: "column", md: "row" }}>
                 <Input
-                  mb={{ base: '2', md: '0' }}
+                  mb={{ base: "2", md: "0" }}
                   placeholder="Full Run Route Name"
                   value={fullRun.name}
-                  onChange={(e) => handleFullRunTextChange('name', index, e)}
+                  onChange={(e) => handleFullRunTextChange("name", index, e)}
                   colorScheme="teal"
                 />
                 <Input
-                  ml={{ base: '0', md: '2' }}
-                  mb={{ base: '2', md: '0' }}
+                  ml={{ base: "0", md: "2" }}
+                  mb={{ base: "2", md: "0" }}
                   type="time"
                   value={fullRun.time}
-                  onChange={(e) => handleFullRunTextChange('time', index, e)}
+                  onChange={(e) => handleFullRunTextChange("time", index, e)}
                   colorScheme="teal"
                 />
                 <Input
-                  ml={{ base: '0', md: '2' }}
+                  ml={{ base: "0", md: "2" }}
                   placeholder="Amount of Passengers Left Behind"
                   value={fullRun.passengersLeftBehind}
                   onChange={(e) =>
-                    handleFullRunTextChange('passengersLeftBehind', index, e)
+                    handleFullRunTextChange("passengersLeftBehind", index, e)
                   }
                   colorScheme="teal"
                 />
@@ -269,11 +287,11 @@ const DispatchForm = () => {
         </FormLabel>
         <Select
           placeholder="Select an option"
-          value={requiresFollowUp ? 'Yes' : 'No'}
+          value={requiresFollowUp}
           onChange={handleRequiresFollowUpChange}
           colorScheme="teal">
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
+          <option value={true}>Yes</option>
+          <option value={false}>No</option>
         </Select>
       </FormControl>
       <Button
@@ -282,6 +300,7 @@ const DispatchForm = () => {
         onClick={handleSubmit}
         w="100%"
         isLoading={isSubmitting}
+        isDisabled={isSubmitButtonDisabled()}
         loadingText="Submitting...">
         Submit
       </Button>

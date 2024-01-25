@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -16,17 +16,17 @@ import {
   ModalFooter,
   FormControl,
   FormErrorMessage,
-} from '@chakra-ui/react';
-import axios from 'axios';
+} from "@chakra-ui/react";
+import axios from "axios";
 
-import { useSnackbar } from '../../context/SnackbarProvider';
-import RouteAccordion from '../../components/RouteManagement/RouteDashboard/RouteAccordion';
-import RouteManagement from '../../components/RouteManagement/RouteManagment';
+import { useSnackbar } from "../../context/SnackbarProvider";
 
-import FormSubmissionManagement from '../../components/FormSubmissionManagement/FormSubmissionManagement';
-import DispatchForm from '../../components/DispatchForm';
-import ResourceManagement from '../../components/ResourceManagement/ResourceManagment';
-import RouteDashboard from '../../components/RouteManagement/RouteDashboard/RouteDashboard';
+import RouteManagement from "../../components/RouteManagement/RouteManagment";
+
+import FormSubmissionManagement from "../../components/FormSubmissionManagement/FormSubmissionManagement";
+import DispatchForm from "../../components/DispatchForm";
+import ResourceManagement from "../../components/ResourceManagement/ResourceManagment";
+import RouteDashboard from "../../components/RouteManagement/RouteDashboard/RouteDashboard";
 
 function Dashboard({
   socket,
@@ -34,20 +34,20 @@ function Dashboard({
   user,
 }) {
   const [newUser, setNewUser] = useState({
-    email: '',
-    password: '',
-    userType: 'dispatcher',
+    email: "",
+    password: "",
+    userType: "dispatcher",
   });
   const [routes, setRoutes] = useState([]);
   const [newRoute, setNewRoute] = useState({
-    name: '',
-    hexColor: '',
+    name: "",
+    hexColor: "",
   });
   const [isRouteModalOpen, setIsRouteModalOpen] = useState(false);
   const [isinviteUserModalOpen, setIsinviteUserModalOpen] = useState(false);
-  const [updatedRouteName, setUpdatedRouteName] = useState('');
-  const [updatedRouteColor, setUpdatedRouteColor] = useState('');
-  const [activeTab, setActiveTab] = useState('dispatchDashboard');
+  const [updatedRouteName, setUpdatedRouteName] = useState("");
+  const [updatedRouteColor, setUpdatedRouteColor] = useState("");
+  const [activeTab, setActiveTab] = useState("dispatchDashboard");
   const [isValidEmailFormat, setIsValidEmailFormat] = useState(false);
   const { showSuccessToast, showErrorToast } = useSnackbar();
 
@@ -56,21 +56,21 @@ function Dashboard({
   }, []);
 
   const openModal = (modal) => {
-    if (modal === 'route') {
+    if (modal === "route") {
       setIsRouteModalOpen(true);
-    } else if (modal === 'inviteUser') {
+    } else if (modal === "inviteUser") {
       setIsinviteUserModalOpen(true);
     }
   };
   const closeModal = (modal) => {
-    if (modal === 'route') {
+    if (modal === "route") {
       setIsRouteModalOpen(false);
 
-      setNewRoute({ name: '', hexColor: '' });
-    } else if (modal === 'inviteUser') {
+      setNewRoute({ name: "", hexColor: "" });
+    } else if (modal === "inviteUser") {
       setIsinviteUserModalOpen(false);
 
-      setNewUser({ email: '', password: '', userType: 'dispatcher' });
+      setNewUser({ email: "", password: "", userType: "dispatcher" });
     }
   };
 
@@ -81,10 +81,10 @@ function Dashboard({
       );
 
       showSuccessToast(
-        'User invited! You must wait 5 minutes before sending another invitation.'
+        "User invited! You must wait 5 minutes before sending another invitation."
       );
 
-      closeModal('inviteUser');
+      closeModal("inviteUser");
     } catch (error) {
       console.error(error);
 
@@ -94,14 +94,14 @@ function Dashboard({
 
   const addRoute = async () => {
     try {
-      await axios.post('/api/routes', {
+      await axios.post("/api/routes", {
         name: newRoute.name,
         color: newRoute.hexColor,
       });
 
-      showSuccessToast('New route added!');
+      showSuccessToast("New route added!");
       fetchRoutes();
-      closeModal('route');
+      closeModal("route");
     } catch (error) {
       console.error(error);
       showErrorToast(error.response.data.error);
@@ -110,7 +110,7 @@ function Dashboard({
 
   const fetchRoutes = async () => {
     try {
-      const { data } = await axios.get('/api/routes', {
+      const { data } = await axios.get("/api/routes", {
         withCredentials: false,
       });
       setRoutes(data);
@@ -126,7 +126,7 @@ function Dashboard({
         color: newColor,
       });
 
-      showSuccessToast('Route updated!');
+      showSuccessToast("Route updated!");
       fetchRoutes();
     } catch (error) {
       console.error(error);
@@ -138,7 +138,7 @@ function Dashboard({
     try {
       await axios.delete(`/api/routes/${routeId}`);
 
-      showSuccessToast('Route deleted!');
+      showSuccessToast("Route deleted!");
       fetchRoutes();
     } catch (error) {
       console.error(error);
@@ -161,27 +161,27 @@ function Dashboard({
             spacing={8}
             bg="compBg">
             <Flex
-              direction={{ base: 'column', md: 'row' }}
-              align={{ base: 'center', md: 'center' }}
-              justify={{ base: 'center', md: 'center' }}
-              mt={['6.8rem', '4.8rem']}>
+              direction={{ base: "column", md: "row" }}
+              align={{ base: "center", md: "center" }}
+              justify={{ base: "center", md: "center" }}
+              mt={["6.8rem", "4.8rem"]}>
               <Button
                 color="text"
                 bg="compBg"
                 variant={
-                  activeTab === 'dispatchDashboard' ? 'solid' : 'outline'
+                  activeTab === "dispatchDashboard" ? "solid" : "outline"
                 }
-                onClick={() => setActiveTab('dispatchDashboard')}
+                onClick={() => setActiveTab("dispatchDashboard")}
                 mb={{ base: 2, md: 0 }}
                 mr={{ base: 0, md: 2 }}>
                 Route Dashboard
               </Button>
               {(user?.isAdmin ||
-                user?.permissions?.find((perm) => perm.tabName === 'dispatch')
+                user?.permissions?.find((perm) => perm.tabName === "dispatch")
                   ?.canAdmin) && (
                 <Button
-                  variant={activeTab === 'routes' ? 'solid' : 'outline'}
-                  onClick={() => setActiveTab('routes')}
+                  variant={activeTab === "routes" ? "solid" : "outline"}
+                  onClick={() => setActiveTab("routes")}
                   mb={{ base: 2, md: 0 }}
                   mr={{ base: 0, md: 2 }}
                   color="text"
@@ -191,18 +191,20 @@ function Dashboard({
               )}
 
               <Button
-                variant={activeTab === 'dispatchReport' ? 'solid' : 'outline'}
-                onClick={() => setActiveTab('dispatchReport')}
+                variant={activeTab === "dispatchReport" ? "solid" : "outline"}
+                onClick={() => setActiveTab("dispatchReport")}
                 mb={{ base: 2, md: 0 }}
                 mr={{ base: 0, md: 2 }}
                 color="text"
                 bg="compBg">
                 Dispatch Report
               </Button>
-              {user?.isAdmin && (
+              {(user?.isAdmin ||
+                user?.permissions?.find((perm) => perm.tabName === "dispatch")
+                  ?.canAdmin) && (
                 <Button
-                  variant={activeTab === 'submissions' ? 'solid' : 'outline'}
-                  onClick={() => setActiveTab('submissions')}
+                  variant={activeTab === "submissions" ? "solid" : "outline"}
+                  onClick={() => setActiveTab("submissions")}
                   mb={{ base: 2, md: 0 }}
                   mr={{ base: 0, md: 2 }}
                   color="text"
@@ -212,8 +214,8 @@ function Dashboard({
               )}
 
               <Button
-                variant={activeTab === 'resources' ? 'solid' : 'outline'}
-                onClick={() => setActiveTab('resources')}
+                variant={activeTab === "resources" ? "solid" : "outline"}
+                onClick={() => setActiveTab("resources")}
                 mb={{ base: 2, md: 0 }}
                 mr={{ base: 0, md: 2 }}
                 color="text"
@@ -222,7 +224,7 @@ function Dashboard({
               </Button>
             </Flex>
             {/* Dispatch Dashboard */}
-            {activeTab === 'dispatchDashboard' && (
+            {activeTab === "dispatchDashboard" && (
               <Stack spacing={4}>
                 <RouteDashboard
                   socket={socket}
@@ -230,34 +232,34 @@ function Dashboard({
                 />
               </Stack>
             )}
-            {activeTab === 'routes' && (
+            {activeTab === "routes" && (
               <RouteManagement
                 routes={routes}
                 deleteRoute={deleteRoute}
                 updateRoute={updateRoute}
                 setUpdatedRouteName={setUpdatedRouteName}
                 setUpdatedRouteColor={setUpdatedRouteColor}
-                openNewRouteModal={() => openModal('route')}
+                openNewRouteModal={() => openModal("route")}
                 updatedRouteName={updatedRouteName}
                 updatedRouteColor={updatedRouteColor}
               />
             )}
-            {activeTab === 'dispatchReport' && (
+            {activeTab === "dispatchReport" && (
               <Stack spacing={4}>
                 <DispatchForm />
               </Stack>
             )}
-            {activeTab === 'submissions' && (
+            {activeTab === "submissions" && (
               <FormSubmissionManagement user={user} />
-            )}{' '}
-            {activeTab === 'resources' && <ResourceManagement user={user} />}
+            )}{" "}
+            {activeTab === "resources" && <ResourceManagement user={user} />}
           </Stack>
         </Box>
       </Center>
 
       <Modal
         isOpen={isRouteModalOpen}
-        onClose={() => closeModal('route')}>
+        onClose={() => closeModal("route")}>
         <ModalOverlay />
 
         <ModalContent
@@ -298,7 +300,7 @@ function Dashboard({
               bg="compBg"
               color="text"
               variant="outline"
-              onClick={() => closeModal('route')}>
+              onClick={() => closeModal("route")}>
               Close
             </Button>
           </ModalFooter>
@@ -306,7 +308,7 @@ function Dashboard({
       </Modal>
       <Modal
         isOpen={isinviteUserModalOpen}
-        onClose={() => closeModal('inviteUser')}>
+        onClose={() => closeModal("inviteUser")}>
         <ModalOverlay />
         <ModalContent
           bg="compBg"
@@ -350,7 +352,7 @@ function Dashboard({
             </Button>
             <Button
               variant="outline"
-              onClick={() => closeModal('inviteUser')}>
+              onClick={() => closeModal("inviteUser")}>
               Cancel
             </Button>
           </ModalFooter>

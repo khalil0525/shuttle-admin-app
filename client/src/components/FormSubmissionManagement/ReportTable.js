@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from "react";
 import {
   Table,
   Thead,
@@ -8,31 +8,69 @@ import {
   Td,
   Button,
   HStack,
-} from '@chakra-ui/react';
-import { useTable, useSortBy } from 'react-table';
+  Checkbox,
+  Tooltip,
+  Box,
+} from "@chakra-ui/react";
+import { useTable, useSortBy } from "react-table";
 
-const ReportTable = ({ columns, data, onDelete }) => {
+const ReportTable = ({
+  columns,
+  data,
+  onDelete,
+  isProcessingResolve,
+  user,
+  setFollowUpItemId,
+  setIsFollowUpModalOpen,
+  setFlashing,
+  flashing,
+  setChange,
+}) => {
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     useTable({ columns, data }, useSortBy);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFlashing((prevFlashing) => !prevFlashing);
+
+      const allResolvedOrNoFollowUp = data.every(
+        (item) => item.resolvedBy || !item.requiresFollowUp
+      );
+      if (allResolvedOrNoFollowUp) {
+        clearInterval(interval);
+      }
+    }, 750);
+
+    return () => clearInterval(interval);
+  }, [data, setFlashing]);
+  const formatTime = (time) => {
+    const formattedTime = new Date(`2000-01-01T${time}`);
+    return formattedTime.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
   return (
     <Table
       {...getTableProps()}
       size="sm"
-      variant="striped"
       textColor="text">
       <Thead>
         {headerGroups.map((headerGroup) => (
-          <Tr {...headerGroup.getHeaderGroupProps()}>
+          <Tr
+            key={headerGroup.id + 14}
+            {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map((column) => (
               <Th
                 {...column.getHeaderProps(column.getSortByToggleProps())}
                 p={2}
                 minWidth="96px"
-                color="text">
-                {column.render('Header')}
+                color="text"
+                key={column.id}>
+                {column.render("Header")}
                 <span>
-                  {column.isSorted ? (column.isSortedDesc ? ' 🔽' : ' 🔼') : ''}
+                  {column.isSorted ? (column.isSortedDesc ? " 🔽" : " 🔼") : ""}
                 </span>
               </Th>
             ))}
@@ -44,12 +82,94 @@ const ReportTable = ({ columns, data, onDelete }) => {
         {rows.map((row) => {
           prepareRow(row);
           return (
-            <Tr {...row.getRowProps()}>
+            <Tr
+              key={row.id}
+              {...row.getRowProps()}>
               {row.cells.map((cell) => (
                 <Td
+                  key={cell.column.id}
                   {...cell.getCellProps()}
                   p={2}>
-                  {cell.render('Cell')}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.4rem",
+                    }}>
+                    {cell.column.id === "requiresFollowUp" && cell.value && (
+                      <Tooltip
+                        label={
+                          user.name && user.name.length && user.isAdmin
+                            ? "Click to Resolve Follow Up"
+                            : user.isAdmin && user.name.length === 0
+                            ? "To Resolve a Follow Up Set Your Name In User Settings"
+                            : "Unauthorized"
+                        }
+                        fontSize="sm"
+                        closeOnClick={true}
+                        isDisabled={isProcessingResolve || cell.value}>
+                        <Checkbox
+                          disabled={
+                            isProcessingResolve ||
+                            (user.isAdmin && user.name.length === 0) ||
+                            (row.original.resolvedBy && !user.isAdmin)
+                          }
+                          isChecked={
+                            row.original.resolvedBy === null ? false : true
+                          }
+                          onChange={() => {
+                            setFollowUpItemId(row.original.id);
+                            setIsFollowUpModalOpen((prev) => !prev);
+                            setChange(
+                              row.original.resolvedBy === null ? true : false
+                            );
+                          }}
+                          size="sm">
+                          {row.original.resolvedBy === null && flashing ? (
+                            <div
+                              style={{
+                                color: flashing ? "red" : "",
+                                animation: "flash 1s infinite",
+                                fontWeight: "bold",
+                              }}>
+                              YES
+                            </div>
+                          ) : null}
+                        </Checkbox>
+                      </Tooltip>
+                    )}
+                    {cell.column.id === "requiresFollowUp" &&
+                      !cell.value &&
+                      row.original.resolvedBy === null && <div>No</div>}
+                    {cell.column.id === "requiresFollowUp" &&
+                      row.original.resolvedBy !== null && (
+                        <div style={{ textAlign: "center" }}>
+                          <div
+                            style={{
+                              fontWeight: "bold",
+                              fontSize: "14px",
+                              color: "green",
+                              marginBottom: "2px",
+                            }}>
+                            Resolved
+                          </div>
+                          <div style={{ fontSize: "14px" }}>
+                            by: {row.original.resolvedBy.name}
+                          </div>
+                        </div>
+                      )}
+                  </Box>
+                  {(cell.column.id === "timeOfDispatchStart" ||
+                    cell.column.id === "timeOfDispatchEnd" ||
+                    cell.column.id === "time") && (
+                    <div>{formatTime(cell.value)}</div>
+                  )}
+                  {cell.column.id !== "requiresFollowUp" &&
+                    cell.column.id !== "timeOfDispatchStart" &&
+                    cell.column.id !== "timeOfDispatchEnd" &&
+                    cell.column.id !== "time" && (
+                      <div>{cell.render("Cell")}</div>
+                    )}
                 </Td>
               ))}
               <Td p={2}>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -8,20 +8,38 @@ import {
   Select,
   Input,
   Center,
-} from '@chakra-ui/react';
+} from "@chakra-ui/react";
 
 const Settings = ({
   changePasswordWithToken,
   user,
   setAndStoreThemeMode,
   themeMode,
+  onAdminChangeName,
 }) => {
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState("");
+  const [editingName, setEditingName] = useState(false);
+  const [newName, setNewName] = useState(user?.name || "");
+  const [nameError, setNameError] = useState("");
 
   const handleChangePassword = async () => {
     try {
       await changePasswordWithToken(password);
-      setPassword('');
+      setPassword("");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleSaveName = async () => {
+    try {
+      validateName();
+
+      if (!nameError) {
+        await onAdminChangeName(newName);
+        setNewName("");
+        setEditingName(false);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -32,6 +50,30 @@ const Settings = ({
   };
 
   const isPasswordValid = password.length >= 8;
+
+  const validateName = () => {
+    if (newName.trim().length < 2) {
+      setNameError("Name must be at least 2 characters long.");
+    } else {
+      const nameRegex = /^[a-zA-Z0-9\s!@#$%^&*(),.?":{}|<>_-]+$/;
+      if (!nameRegex.test(newName.trim())) {
+        setNameError("Invalid characters in the name.");
+      } else {
+        setNameError("");
+      }
+    }
+  };
+
+  const handleEditName = () => {
+    setEditingName(true);
+  };
+
+  const handleCancelEdit = () => {
+    setNewName(user?.name || "");
+    setEditingName(false);
+    setNameError("");
+  };
+
   return (
     <Box>
       <Center>
@@ -41,7 +83,7 @@ const Settings = ({
           maxWidth="1200px"
           width="100%">
           <Stack
-            mt={['1.6rem', '4.8rem']}
+            mt={["1.6rem", "4.8rem"]}
             mx="auto"
             spacing={[4, 8]}
             p={[4, 8]}
@@ -57,6 +99,58 @@ const Settings = ({
               mb={4}>
               User Settings
             </Heading>
+            {user.isAdmin && (
+              <Box w="100%">
+                <Text
+                  fontWeight="bold"
+                  mb={2}>
+                  Name
+                </Text>
+                {editingName ? (
+                  <>
+                    <Input
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      onBlur={validateName}
+                    />
+                    {nameError && (
+                      <Text
+                        color="red"
+                        fontSize="sm"
+                        mt={1}>
+                        {nameError}
+                      </Text>
+                    )}
+                    <Button
+                      mt={2}
+                      mr={2}
+                      colorScheme="green"
+                      onClick={handleSaveName}
+                      isDisabled={!!nameError}>
+                      Save
+                    </Button>
+                    <Button
+                      mt={2}
+                      color="text"
+                      bg="compBg"
+                      variant="outline"
+                      onClick={handleCancelEdit}>
+                      Cancel
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Text>{user?.name || "unset"}</Text>
+                    <Button
+                      mt={2}
+                      colorScheme="blue"
+                      onClick={handleEditName}>
+                      Edit
+                    </Button>
+                  </>
+                )}
+              </Box>
+            )}
 
             <Box w="100%">
               <Text
@@ -106,7 +200,7 @@ const Settings = ({
             </Box>
           </Stack>
         </Box>
-      </Center>{' '}
+      </Center>{" "}
     </Box>
   );
 };
