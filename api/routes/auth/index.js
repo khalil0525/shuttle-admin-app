@@ -112,7 +112,7 @@ router.post("/user/invite", async (req, res) => {
               <a href="${
                 process.env.env === "development"
                   ? "http://localhost:3000"
-                  : "https://portal.occtransport.org"
+                  : "https://bus-routing-portal-prod-18d532a8f2ff.herokuapp.com"
               }/set-up-account?token=${token}" class="button">
                 Set Up Account
               </a>
@@ -629,7 +629,7 @@ router.post("/password/recover", async (req, res) => {
 					<a href="${
             process.env.env === "development"
               ? "http://localhost:3000"
-              : "https://portal.occtransport.org"
+              : "https://bus-routing-portal-prod-18d532a8f2ff.herokuapp.com"
           }/change-password?token=${token}" class="button">
 					  Reset Password
 					</a>
@@ -736,7 +736,7 @@ router.post("/password/reset/:userId", async (req, res) => {
               <a href="${
                 process.env.env === "development"
                   ? "http://localhost:3000"
-                  : "https://portal.occtransport.org"
+                  : "https://bus-routing-portal-prod-18d532a8f2ff.herokuapp.com"
               }/reset-password?token=${token}" class="button">
                 Reset Password
               </a>
