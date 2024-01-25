@@ -1,27 +1,28 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Routes,
   Route,
   Navigate,
   BrowserRouter as Router,
-} from 'react-router-dom';
-import SunCalc from 'suncalc';
+} from "react-router-dom";
+import SunCalc from "suncalc";
 
-import Dashboard from './views/Dashboard/Dashboard';
-import Admin from './views/Admin/Admin';
-import Recover from './components/Authentication/Recover';
-import Register from './components/Authentication/Register';
-import Home from './views/Home/Home';
-import Navbar from './components/Navbar/Navbar';
-import Settings from './views/Settings/Settings';
-import LoginPage from './components/Authentication/LoginPage';
-import { useCookies } from 'react-cookie';
-import io from 'socket.io-client';
-import { useSnackbar } from './context/SnackbarProvider';
-import axios from 'axios';
-import { Box, Flex, Spinner } from '@chakra-ui/react';
-import Website from './views/Website/Website';
-import Training from './views/Training/Training';
+import Dashboard from "./views/Dashboard/Dashboard";
+import Admin from "./views/Admin/Admin";
+import Recover from "./components/Authentication/Recover";
+import Register from "./components/Authentication/Register";
+import Home from "./views/Home/Home";
+import Navbar from "./components/Navbar/Navbar";
+import Settings from "./views/Settings/Settings";
+import LoginPage from "./components/Authentication/LoginPage";
+import { useCookies } from "react-cookie";
+import io from "socket.io-client";
+import { useSnackbar } from "./context/SnackbarProvider";
+import axios from "axios";
+import { Box, Flex, Spinner } from "@chakra-ui/react";
+import Website from "./views/Website/Website";
+import Training from "./views/Training/Training";
+import Reset from "./components/Authentication/Reset";
 
 const currentLocation = window.location;
 
@@ -43,31 +44,31 @@ function AppRouter({
   const [userPerms, setUserPerms] = useState(null);
   const { showSuccessToast, showErrorToast } = useSnackbar();
   const [socket, setSocket] = useState(null);
-  const [cookies, setCookie, removeCookie] = useCookies(['x-access-token']);
+  const [cookies, setCookie, removeCookie] = useCookies(["x-access-token"]);
 
   const login = async (credentials) => {
     try {
-      const { data } = await axios.post('/auth/login', credentials, {
+      const { data } = await axios.post("/auth/login", credentials, {
         withCredentials: true,
       });
 
-      setCookie('x-access-token', data.token, {
-        path: '/',
+      setCookie("x-access-token", data.token, {
+        path: "/",
         maxAge: 604800,
       });
       setUser(data);
-      showSuccessToast('Successfully logged in!');
+      showSuccessToast("Successfully logged in!");
     } catch (error) {
       console.error(error);
-      setUser({ error: error.response.data.error || 'Server Error' });
+      setUser({ error: error.response.data.error || "Server Error" });
       showErrorToast(error.response.data.error);
     }
   };
 
   const logout = async () => {
     try {
-      await axios.delete('/auth/logout');
-      removeCookie('x-access-token', { path: '/' });
+      await axios.delete("/auth/logout");
+      removeCookie("x-access-token", { path: "/" });
 
       setUser({});
     } catch (error) {
@@ -80,7 +81,7 @@ function AppRouter({
       const response = await axios.post(`/auth/password/check-auth/${token}`);
       return response.data;
     } catch (error) {
-      console.error('Error checking authentication:', error);
+      console.error("Error checking authentication:", error);
       showErrorToast(error.response.data.error);
       return { valid: false };
     }
@@ -88,7 +89,7 @@ function AppRouter({
 
   const recoverPassword = async (email) => {
     try {
-      await axios.post('/auth/password/recover', {
+      await axios.post("/auth/password/recover", {
         email,
       });
     } catch (error) {
@@ -107,6 +108,36 @@ function AppRouter({
       showErrorToast(error.response.data.error);
     }
   };
+
+  const resetChangePassword = async (token, password, tempPassword) => {
+    try {
+      await axios.post(`/auth/password/set/${token}`, {
+        tempPassword: tempPassword,
+        newPassword: password,
+      });
+    } catch (error) {
+      console.error(error);
+      showErrorToast(error.response.data.error);
+    }
+  };
+
+  const onAdminChangeName = async (name) => {
+    try {
+      const { data } = await axios.post(`/auth/name/change`, {
+        newName: name,
+      });
+
+      setUser((prev) => {
+        return { ...prev, name: data.user.name };
+      });
+
+      showSuccessToast("Name changed successfully!");
+    } catch (error) {
+      console.error(error);
+      showErrorToast(error.response.data.error);
+      throw error;
+    }
+  };
   const registerInvitedUser = async (token, password, tempPassword) => {
     try {
       const { data } = await axios.post(`/auth/user/create`, {
@@ -114,12 +145,15 @@ function AppRouter({
         tempPassword,
         password,
       });
-      await localStorage.setItem('admin-login-token', data.token);
+      setCookie("x-access-token", data.token, {
+        path: "/",
+        maxAge: 604800,
+      });
       setUser(data);
-      showSuccessToast('Sucessfully logged in!');
+      showSuccessToast("Sucessfully logged in!");
     } catch (error) {
       console.error(error);
-      setUser({ error: error.response.data.error || 'Server Error' });
+      setUser({ error: error.response.data.error || "Server Error" });
       showErrorToast(error.response.data.error);
       throw error;
     }
@@ -129,7 +163,7 @@ function AppRouter({
       await axios.post(`/auth/password/change`, {
         newPassword: password,
       });
-      showSuccessToast('Password successfully changed!');
+      showSuccessToast("Password successfully changed!");
     } catch (error) {
       console.error(error);
       showErrorToast(error.response.data.error);
@@ -138,19 +172,19 @@ function AppRouter({
   };
   const isDaytime = () => {
     const now = new Date();
-    const times = SunCalc.getTimes(now, '40.7128', '-74.0060');
+    const times = SunCalc.getTimes(now, "40.7128", "-74.0060");
 
     return now >= times.sunrise && now <= times.sunset;
   };
   const changeThemeModeBasedOnTime = useCallback(() => {
-    if (themeMode === 'auto') {
+    if (themeMode === "auto") {
       if (isDaytime()) {
-        if (autoThemeMode !== 'light') {
-          setAutoThemeMode('light');
+        if (autoThemeMode !== "light") {
+          setAutoThemeMode("light");
         }
       } else {
-        if (autoThemeMode !== 'dark') {
-          setAutoThemeMode('dark');
+        if (autoThemeMode !== "dark") {
+          setAutoThemeMode("dark");
         }
       }
     }
@@ -159,7 +193,7 @@ function AppRouter({
     const fetchUser = async () => {
       setUser((prev) => ({ ...prev, isFetching: true }));
       try {
-        const { data } = await axios.get('/auth/user');
+        const { data } = await axios.get("/auth/user");
         setUserPerms(data.permissions);
         setUser(data);
       } catch (error) {
@@ -175,7 +209,7 @@ function AppRouter({
     const newSocket = io(
       process.env.REACT_APP_URL
         ? process.env.REACT_APP_URL
-        : 'https://bus-routing-portal-prod-18d532a8f2ff.herokuapp.com'
+        : "https://portal.occtransport.org"
     );
     setSocket(newSocket);
 
@@ -205,8 +239,8 @@ function AppRouter({
   return (
     <Router>
       <Box
-        h="100vh"
-        bg="compBg">
+        bg="compBg"
+        minH="100vh">
         <Navbar
           logout={logout}
           user={user}
@@ -233,6 +267,15 @@ function AppRouter({
               element={
                 <Recover
                   recoveryChangePassword={recoveryChangePassword}
+                  checkAuth={checkAuth}
+                />
+              }
+            />{" "}
+            <Route
+              path="/reset-password"
+              element={
+                <Reset
+                  resetChangePassword={resetChangePassword}
                   checkAuth={checkAuth}
                 />
               }
@@ -270,7 +313,7 @@ function AppRouter({
                   />
                 )
               }
-            />{' '}
+            />{" "}
             <Route
               path="/settings"
               element={
@@ -281,6 +324,7 @@ function AppRouter({
                     changePasswordWithToken={changePasswordWithToken}
                     setAndStoreThemeMode={setAndStoreThemeMode}
                     themeMode={themeMode}
+                    onAdminChangeName={onAdminChangeName}
                   />
                 ) : (
                   <Navigate
@@ -294,7 +338,7 @@ function AppRouter({
               path="/dispatch"
               element={
                 user?.id &&
-                (user?.permissions?.find((perm) => perm.tabName === 'dispatch')
+                (user?.permissions?.find((perm) => perm.tabName === "dispatch")
                   .canView ||
                   user.isAdmin) ? (
                   <Dashboard
@@ -316,7 +360,7 @@ function AppRouter({
               path="/training"
               element={
                 user.id &&
-                (user?.permissions?.find((perm) => perm.tabName === 'training')
+                (user?.permissions?.find((perm) => perm.tabName === "training")
                   .canView ||
                   user.isAdmin) ? (
                   <Training user={user} />
@@ -333,7 +377,7 @@ function AppRouter({
               element={
                 user.id &&
                 (user?.permissions?.find(
-                  (perm) => perm.tabName === 'whiteboard'
+                  (perm) => perm.tabName === "whiteboard"
                 ).canView ||
                   user.isAdmin) ? (
                   <Navigate
@@ -347,12 +391,12 @@ function AppRouter({
                   />
                 )
               }
-            />{' '}
+            />{" "}
             <Route
               path="/website"
               element={
                 user.id &&
-                (user?.permissions?.find((perm) => perm.tabName === 'website')
+                (user?.permissions?.find((perm) => perm.tabName === "website")
                   .canView ||
                   user.isAdmin) ? (
                   <Website />

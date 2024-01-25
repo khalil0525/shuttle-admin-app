@@ -10,7 +10,7 @@ import {
   FormErrorMessage,
 } from "@chakra-ui/react";
 
-const Recover = ({ checkAuth, recoveryChangePassword }) => {
+const Reset = ({ checkAuth, resetChangePassword }) => {
   const history = useNavigate();
   const location = useLocation();
   const [password, setPassword] = useState("");
@@ -21,6 +21,8 @@ const Recover = ({ checkAuth, recoveryChangePassword }) => {
   const [token, setToken] = useState(null);
   const [notificationMessage, setNotificationMessage] = useState("");
 
+  const [tempPassword, setTempPassword] = useState("");
+  const [tempPasswordError, setTempPasswordError] = useState("");
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const pageToken = urlParams.get("token");
@@ -65,19 +67,27 @@ const Recover = ({ checkAuth, recoveryChangePassword }) => {
     setConfirmPasswordError("");
     return true;
   };
-
+  const validateTempPassword = () => {
+    if (!tempPassword) {
+      setTempPasswordError("Temporary password is required.");
+      return false;
+    }
+    setTempPasswordError("");
+    return true;
+  };
   const validateForm = () => {
+    const isTempPasswordValid = validateTempPassword();
     const isPasswordValid = validatePassword();
     const isConfirmPasswordValid = validateConfirmPassword();
 
-    return isPasswordValid && isConfirmPasswordValid;
+    return isTempPasswordValid && isPasswordValid && isConfirmPasswordValid;
   };
 
   const handleRecover = async (e) => {
     e.preventDefault();
 
     if (validateForm()) {
-      await recoveryChangePassword(token, password);
+      await resetChangePassword(token, password, tempPassword);
 
       setNotificationMessage(
         "Password changed successfully. Redirecting in 6 seconds..."
@@ -126,6 +136,21 @@ const Recover = ({ checkAuth, recoveryChangePassword }) => {
             </Text>
             <FormControl
               mb={3}
+              isInvalid={tempPasswordError !== ""}>
+              <Input
+                type="text"
+                placeholder="Temporary Password"
+                value={tempPassword}
+                onChange={(e) => setTempPassword(e.target.value)}
+                size="lg"
+                borderRadius="lg"
+              />
+              <FormErrorMessage color="red">
+                {tempPasswordError}
+              </FormErrorMessage>
+            </FormControl>
+            <FormControl
+              mb={3}
               isInvalid={passwordError !== ""}>
               <Input
                 type="password"
@@ -169,7 +194,7 @@ const Recover = ({ checkAuth, recoveryChangePassword }) => {
             mb={4}
             color="red"
             fontWeight="normal">
-            Invalid or expired recovery token. Please try again.
+            Invalid or expired rest token. Please try again.
           </Text>
         )}
         {notificationMessage && (
@@ -186,4 +211,4 @@ const Recover = ({ checkAuth, recoveryChangePassword }) => {
   );
 };
 
-export default Recover;
+export default Reset;
