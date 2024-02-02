@@ -62,7 +62,7 @@ router.post("/user/invite", async (req, res) => {
     const mailConfigurations = {
       from: process.env.NODEMAILER_EMAIL,
       to: email,
-      subject: "OCC Transport Portal Login",
+      subject: "Shuttle Admin App (Khalil Collins)",
       html: `
       <html>
       <head>
@@ -104,7 +104,7 @@ router.post("/user/invite", async (req, res) => {
       <body>
         <div class="container">
           <div class="header">
-            <h2>Welcome to OCC Transport!</h2>
+            <h2>Shuttle admin app!</h2>
           </div>
           <div class="content">
             <p>Here is the link to set up your account:</p>
@@ -337,7 +337,7 @@ router.post("/login", async (req, res, next) => {
           maxAge: 7 * 24 * 60 * 60,
           sameSite: "lax",
           secure: process.env.NODE_ENV === "production",
-          domain: "occt-dispatch-website-006ef2bb4dfc.herokuapp.com",
+          domain: "bus-routing-portal-prod-18d532a8f2ff.herokuapp.com",
         })
       );
       const origin = req.get("origin");
