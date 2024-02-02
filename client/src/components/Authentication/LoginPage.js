@@ -15,10 +15,9 @@ import { useSnackbar } from "../../context/SnackbarProvider";
 import { PiBusThin } from "react-icons/pi";
 
 function LoginPage({ login, recoverPassword }) {
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
+
   const [loginMessage, setLoginMessage] = useState("");
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
@@ -26,7 +25,10 @@ function LoginPage({ login, recoverPassword }) {
   const { showErrorToast } = useSnackbar();
   const [backgroundImage, setBackgroundImage] = useState(null);
   const [selectedRole, setSelectedRole] = useState("user");
-
+  const [email, setEmail] = useState(
+    selectedRole === "admin" ? "testeradmin@test.com" : "testeruser@test.com"
+  );
+  const [passwordError, setPasswordError] = useState("gggabc123");
   const validateEmail = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -60,11 +62,7 @@ function LoginPage({ login, recoverPassword }) {
       try {
         setIsButtonDisabled(true);
 
-        const role =
-          selectedRole === "admin"
-            ? "testeradmin@test.com"
-            : "testeruser@test.com";
-        await login({ email: role, password: "gggabc123" });
+        const role = await login({ email: role, password: "gggabc123" });
 
         setLoginMessage("Login failed. Please check your credentials.");
       } catch (error) {
@@ -210,6 +208,7 @@ function LoginPage({ login, recoverPassword }) {
               size="lg"
               borderRadius="lg"
               autoComplete="email"
+              isDisabled={true}
             />
             <FormErrorMessage color="red">{emailError}</FormErrorMessage>
           </FormControl>
@@ -225,6 +224,7 @@ function LoginPage({ login, recoverPassword }) {
                 size="lg"
                 borderRadius="lg"
                 autoComplete="current-password"
+                isDisabled={true}
               />
               <FormErrorMessage color="red">{passwordError}</FormErrorMessage>
             </FormControl>
