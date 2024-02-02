@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Flex,
@@ -7,40 +7,42 @@ import {
   Button,
   FormControl,
   FormErrorMessage,
-} from '@chakra-ui/react';
-import axios from 'axios';
-import { useSnackbar } from '../../context/SnackbarProvider';
+  Select,
+} from "@chakra-ui/react";
+import axios from "axios";
+import { useSnackbar } from "../../context/SnackbarProvider";
 
-import { PiBusThin } from 'react-icons/pi';
+import { PiBusThin } from "react-icons/pi";
 
 function LoginPage({ login, recoverPassword }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [loginMessage, setLoginMessage] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [loginMessage, setLoginMessage] = useState("");
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
-  const [notificationMessage, setNotificationMessage] = useState('');
+  const [notificationMessage, setNotificationMessage] = useState("");
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const { showErrorToast } = useSnackbar();
   const [backgroundImage, setBackgroundImage] = useState(null);
+  const [selectedRole, setSelectedRole] = useState("user");
 
   const validateEmail = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setEmailError('Please enter a valid email address.');
+      setEmailError("Please enter a valid email address.");
       return false;
     }
-    setEmailError('');
+    setEmailError("");
     return true;
   };
 
   const validatePassword = () => {
     if (password.length < 6) {
-      setPasswordError('Password must be at least 6 characters long.');
+      setPasswordError("Password must be at least 6 characters long.");
       return false;
     }
-    setPasswordError('');
+    setPasswordError("");
     return true;
   };
 
@@ -58,25 +60,29 @@ function LoginPage({ login, recoverPassword }) {
       try {
         setIsButtonDisabled(true);
 
-        await login({ email, password });
-        setLoginMessage('Login failed. Please check your credentials.');
+        const role =
+          selectedRole === "admin"
+            ? "testeradmin@test.com"
+            : "testeruser@test.com";
+        await login({ email: role, password: "gggabc123" });
+
+        setLoginMessage("Login failed. Please check your credentials.");
       } catch (error) {
-        setLoginMessage('');
+        setLoginMessage("");
         console.error(error);
       } finally {
         setIsButtonDisabled(false);
       }
     }
   };
-
   const handlePasswordRecovery = async (e) => {
     e.preventDefault();
     try {
       setIsButtonDisabled(true);
       await recoverPassword(email);
-      setEmail('');
+      setEmail("");
       setNotificationMessage(
-        'Password recovery email sent successfully. Check your email.'
+        "Password recovery email sent successfully. Check your email."
       );
 
       setTimeout(() => {
@@ -84,31 +90,31 @@ function LoginPage({ login, recoverPassword }) {
         setIsButtonDisabled(false);
       }, 5000);
     } catch (error) {
-      setNotificationMessage('Email not found. Please check your email.');
+      setNotificationMessage("Email not found. Please check your email.");
     } finally {
       setIsButtonDisabled(false);
     }
   };
 
   const toggleForm = () => {
-    setEmail('');
-    setPassword('');
-    setEmailError('');
-    setPasswordError('');
-    setLoginMessage('');
+    setEmail("");
+    setPassword("");
+    setEmailError("");
+    setPasswordError("");
+    setLoginMessage("");
     setIsPasswordRecovery(!isPasswordRecovery);
   };
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      setNotificationMessage('');
+      setNotificationMessage("");
     }, 5000);
 
     return () => clearTimeout(timeoutId);
   }, [notificationMessage]);
 
   useEffect(() => {
-    setEmailError('');
+    setEmailError("");
   }, [email]);
 
   useEffect(() => {
@@ -127,7 +133,7 @@ function LoginPage({ login, recoverPassword }) {
 
   return (
     <Flex
-      bg={backgroundImage ? `url(${backgroundImage})` : '#2596be'}
+      bg={backgroundImage ? `url(${backgroundImage})` : "#2596be"}
       onSubmit={isPasswordRecovery ? handlePasswordRecovery : handleLogin}
       backgroundSize="cover"
       backgroundPosition="center"
@@ -154,21 +160,21 @@ function LoginPage({ login, recoverPassword }) {
           <Box
             width="100%"
             sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
             p={2}
             textAlign="center"
             color="text">
-            <PiBusThin style={{ fontSize: '48px' }} />
+            <PiBusThin style={{ fontSize: "48px" }} />
           </Box>
           <Text
             fontSize="24px"
             fontWeight="bold"
             mb={4}
             color="text">
-            {isPasswordRecovery ? 'Password Recovery' : ''}
+            {isPasswordRecovery ? "Password Recovery" : ""}
           </Text>
           {!isPasswordRecovery && (
             <Text
@@ -179,40 +185,23 @@ function LoginPage({ login, recoverPassword }) {
               Login Portal
             </Text>
           )}
-          {loginMessage && (
-            <Text
-              fontSize="16px"
-              mb={4}
-              color="red"
-              fontWeight="normal">
-              {loginMessage}
-            </Text>
-          )}
-          {notificationMessage && (
-            <Text
-              fontSize="16px"
-              mb={4}
-              color={
-                notificationMessage.includes('successfully') ? 'green' : 'red'
-              }
-              fontWeight="normal">
-              {notificationMessage}
-            </Text>
-          )}
-
-          {isPasswordRecovery && !notificationMessage && (
-            <Text
-              fontSize="16px"
-              mb={4}
-              color="text"
-              fontWeight="normal">
-              Enter your email address and we’ll send you an email to get back
-              into your account.
-            </Text>
-          )}
+          {/* Add the role selection dropdown */}
           <FormControl
             mb={3}
-            isInvalid={emailError !== ''}>
+            isInvalid={emailError !== ""}>
+            <Select
+              placeholder="Select Role"
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+              size="lg"
+              borderRadius="lg">
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </Select>
+          </FormControl>
+          <FormControl
+            mb={3}
+            isInvalid={emailError !== ""}>
             <Input
               type="email"
               placeholder="Enter your email"
@@ -227,7 +216,7 @@ function LoginPage({ login, recoverPassword }) {
           {!isPasswordRecovery && (
             <FormControl
               mb={3}
-              isInvalid={passwordError !== ''}>
+              isInvalid={passwordError !== ""}>
               <Input
                 type="password"
                 placeholder="Enter your password"
@@ -249,7 +238,7 @@ function LoginPage({ login, recoverPassword }) {
             borderRadius="lg"
             mt={4}
             isDisabled={isButtonDisabled}>
-            {isPasswordRecovery ? 'Recover Password' : 'Log In'}
+            {isPasswordRecovery ? "Recover Password" : "Log In"}
           </Button>
           <Text
             mt={4}
@@ -258,8 +247,8 @@ function LoginPage({ login, recoverPassword }) {
             cursor="pointer"
             onClick={toggleForm}>
             {isPasswordRecovery
-              ? 'Back to Login'
-              : 'Forgot your password? Click here to recover.'}
+              ? "Back to Login"
+              : "Forgot your password? Click here to recover."}
           </Text>
         </Box>
       </Flex>
