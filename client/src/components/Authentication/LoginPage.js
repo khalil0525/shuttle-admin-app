@@ -15,7 +15,7 @@ import { useSnackbar } from "../../context/SnackbarProvider";
 import { PiBusThin } from "react-icons/pi";
 
 function LoginPage({ login, recoverPassword }) {
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState("gggaabc123");
   const [emailError, setEmailError] = useState("");
 
   const [loginMessage, setLoginMessage] = useState("");
@@ -28,7 +28,7 @@ function LoginPage({ login, recoverPassword }) {
   const [email, setEmail] = useState(
     selectedRole === "admin" ? "testeradmin@test.com" : "testeruser@test.com"
   );
-  const [passwordError, setPasswordError] = useState("gggabc123");
+  const [passwordError, setPasswordError] = useState("");
   const validateEmail = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
