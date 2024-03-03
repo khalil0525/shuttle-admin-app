@@ -213,7 +213,7 @@ function AppRouter({
     const newSocket = io(
       process.env.REACT_APP_URL
         ? process.env.REACT_APP_URL
-        : "https://portal.occtransport.org"
+        : "https://bus-routing-portal-prod-18d532a8f2ff.herokuapp.com"
     );
     setSocket(newSocket);
 
