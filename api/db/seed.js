@@ -7,13 +7,13 @@ async function seed() {
   console.log("db synced!");
 
   const PrimaryAdmin = await User.create({
-    email: "tech@occtransport.org",
-    password: "OCCTtech986@!",
+    email: "testeradmin@test.com",
+    password: "gggabc123",
     isAdmin: true,
   });
   const SecondaryAdmin = await User.create({
-    email: "bytesizedcoder@gmail.com",
-    password: "OCCTtech986@!",
+    email: "testeruser@test.com",
+    password: "gggabc123",
     isAdmin: true,
   });
   // Sample ScheduleBlock data
