@@ -19,7 +19,7 @@ import ExportCSVModal from "./ExportCSVModal";
 import TableComponent from "./ReportTable";
 import ConfirmFollowUpModal from "./ConfirmFollowUpModal";
 
-const FormSubmissionManagement = ({ user }) => {
+const DispatchReportManagement = ({ user }) => {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("reports");
   const [reports, setReports] = useState([]);
@@ -42,17 +42,10 @@ const FormSubmissionManagement = ({ user }) => {
     const fetchData = async () => {
       try {
         const reportsData = await getDispatchReports();
-        setReports(reportsData);
-
         const fullRunsData = await getFullRuns();
 
-        const sortedFullRuns = fullRunsData.sort((a, b) => {
-          const dateA = new Date(`${a.date} ${a.time}`);
-          const dateB = new Date(`${b.date} ${b.time}`);
-          return dateB - dateA;
-        });
-
-        setFullRuns(sortedFullRuns);
+        setReports(reportsData);
+        setFullRuns(fullRunsData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -261,7 +254,7 @@ const FormSubmissionManagement = ({ user }) => {
         const sortedFullRuns = updatedFullRuns.sort((a, b) => {
           const dateA = new Date(`${a.date} ${a.time}`);
           const dateB = new Date(`${b.date} ${b.time}`);
-          return dateB - dateA;
+          return dateA - dateB;
         });
 
         return sortedFullRuns;
@@ -387,28 +380,7 @@ const FormSubmissionManagement = ({ user }) => {
             </Tab>
           </TabList>
         </Flex>
-        <Divider />{" "}
-        <Flex
-          justifyContent="center"
-          alignItems="center"
-          direction={{ base: "column", md: "column" }}
-          gap="12px"
-          mt={8}
-          mb={8}>
-          <Button
-            onClick={openExportModal}
-            colorScheme="teal"
-            variant="solid">
-            Convert to Downloadable Spreadsheet
-          </Button>
-          {activeTab === "runs" && (
-            <Button
-              colorScheme="blue"
-              onClick={openModal}>
-              Manually Add Full Runs
-            </Button>
-          )}
-        </Flex>
+        <Divider />
         <Box
           overflowX="auto"
           maxWidth="100%"
@@ -435,6 +407,27 @@ const FormSubmissionManagement = ({ user }) => {
             setChange={setChange}
           />
         </Box>
+
+        <Flex
+          justifyContent="center"
+          alignItems="center"
+          direction={{ base: "column", md: "column" }}
+          gap="12px"
+          mt={8}>
+          <Button
+            onClick={openExportModal}
+            colorScheme="teal"
+            variant="solid">
+            Convert to Downloadable Spreadsheet
+          </Button>
+          {activeTab === "runs" && (
+            <Button
+              colorScheme="blue"
+              onClick={openModal}>
+              Manually Add Full Runs
+            </Button>
+          )}
+        </Flex>
       </Tabs>
       <ExportCSVModal
         isOpen={isExportModalOpen}
@@ -468,4 +461,4 @@ const FormSubmissionManagement = ({ user }) => {
   );
 };
 
-export default FormSubmissionManagement;
+export default DispatchReportManagement;

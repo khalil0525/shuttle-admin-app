@@ -62,7 +62,7 @@ function LoginPage({ login, recoverPassword }) {
       try {
         setIsButtonDisabled(true);
 
-        const role = await login({ email: role, password: "gggabc123" });
+        await login({ email: email, password: "gggabc123" });
 
         setLoginMessage("Login failed. Please check your credentials.");
       } catch (error) {

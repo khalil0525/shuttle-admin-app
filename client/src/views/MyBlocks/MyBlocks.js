@@ -1,31 +1,20 @@
-import React, { useEffect, useState } from "react";
-import { Box, Button, Center } from "@chakra-ui/react";
-import Calendar from "../../components/BlocksheetManagement/Calendar";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { Box, Center } from "@chakra-ui/react";
+import PostToTradeboardModal from "../../components/MyBlocksManagement/PostToTradeboardModal";
+import Calendar from "../../components/BlocksheetManagement/Calendar";
 import { useSnackbar } from "../../context/SnackbarProvider";
 import { typeOptions } from "../../components/data";
 import BlocksheetActionModal from "../../components/BlocksheetManagement/BlocksheetActionModal";
-import PostToTradeboardModal from "../../components/MyBlocksManagement/PostToTradeboardModal";
-
-function Home({ user }) {
-  const [currentWeek, setCurrentWeek] = useState(0);
-
-  const [users, setUsers] = useState([]);
-
-  const [blockToDeleteId, setBlockToDeleteId] = useState(null);
-  const [editBlock, setEditBlock] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const { showSuccessToast, showErrorToast } = useSnackbar();
-  const handleWeekChange = (change) => {
-    setCurrentWeek(currentWeek + change);
-  };
-
+const MyBlocks = ({ user }) => {
   const [scheduleBlocks, setScheduleBlocks] = useState([]);
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [editBlock, setEditBlock] = useState(null);
   const [selectedBlockId, setSelectedBlockId] = useState(null);
   const [postText, setPostText] = useState("");
   const [isPostModalOpen, setIsPostModalOpen] = useState(null);
+  const { showSuccessToast, showErrorToast } = useSnackbar();
 
   const handlePostRemoveBlock = async (blockId) => {
     try {
@@ -59,30 +48,8 @@ function Home({ user }) {
     }
   };
 
-  useEffect(() => {
-    const fetchScheduleBlocks = async () => {
-      try {
-        const { data } = await axios.get("/api/blocksheet/sheet");
-        console.log(data);
-        setScheduleBlocks(data.scheduleBlocks);
-      } catch (error) {
-        showErrorToast(error.response.data.error);
-      }
-    };
-    const fetchUsers = async () => {
-      try {
-        const { data } = await axios.get("/auth/block/users");
-        setUsers(data);
-      } catch (error) {
-        showErrorToast(error.response.data.error);
-      }
-    };
-    fetchUsers();
-    fetchScheduleBlocks();
-  }, []);
-  const handleUpdateBlocksheet = async () => {
+  const handleSaveChanges = async () => {
     try {
-      setIsLoading(true);
       await axios.put(`/api/blocksheet/${editBlock.id}`, {
         scheduleBlockData: editBlock,
       });
@@ -93,77 +60,75 @@ function Home({ user }) {
         );
         return updatedBlocks;
       });
-      setEditBlock(false);
+      setEditBlock(null);
       showSuccessToast("Block successfully edited!");
     } catch (error) {
+      console.error(error);
+
       showErrorToast(error.response.data.error);
       throw new Error(error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  const handleDeleteBlock = async () => {
+  useEffect(() => {
+    const fetchScheduleBlocks = async () => {
+      try {
+        const { data } = await axios.get(`/api/blocksheet/blocks/${user.id}`);
+        console.log(data);
+        setScheduleBlocks(data.scheduleBlocks);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    const fetchUsers = async () => {
+      try {
+        const { data } = await axios.get("/auth/block/users");
+        setUsers(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchUsers();
+    fetchScheduleBlocks();
+  }, []);
+
+  const handlePostRemoveClick = (id) => {
+    setSelectedBlockId(id);
+    setIsPostModalOpen((prev) => !prev);
+  };
+  const handleDeleteBlock = async (blockToDeleteId) => {
     try {
-      setIsLoading(true);
-      await axios.delete(`/api/blocksheet/${editBlock.id}`);
+      await axios.delete(`/api/blocksheet/${blockToDeleteId}`);
       showSuccessToast("Block successfully deleted!");
-      setScheduleBlocks((prev) => prev.filter((sb) => sb.id !== editBlock.id));
+      setScheduleBlocks((prev) =>
+        prev.filter((sb) => sb.id !== blockToDeleteId)
+      );
       setEditBlock(null);
     } catch (error) {
       console.error(error);
       showErrorToast(error.response.data.error);
-    } finally {
-      setIsLoading(false);
     }
   };
+  if (true) {
+    return <Box></Box>;
+  }
 
   return (
     <Box>
       <Center>
         <Box
-          display="flex"
           p={2}
-          align="center"
-          justify="center"
-          color="text"
           maxWidth="100vw"
           width="100%"
-          flexDirection="column"
           mt="6.8rem">
-          <Box
-            m="0 auto"
-            display="flex"
-            p={2}
-            align="center"
-            justify="center"
-            gap={2}
-            color="text">
-            <Button
-              size="sm"
-              onClick={() => handleWeekChange(-1)}>
-              Previous Week
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => setCurrentWeek(0)}>
-              This Week
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => handleWeekChange(1)}>
-              Next Week
-            </Button>
-          </Box>
-
           <Calendar
-            currentWeekOffset={currentWeek}
+            isLoading={isLoading}
             scheduleBlocks={scheduleBlocks}
             typeOptions={typeOptions}
-            setEditBlock={setEditBlock}
+            handleButtonClick={handlePostRemoveClick}
             user={user}
-            users={users}
-            isBlockSheet={true}
+            currentWeekOffset={0}
+            setEditBlock={setEditBlock}
           />
         </Box>
       </Center>
@@ -185,19 +150,19 @@ function Home({ user }) {
         setPostText={setPostText}
       />
       <BlocksheetActionModal
-        isOpen={(editBlock || blockToDeleteId) && !selectedBlockId}
-        blocksheetToDeleteId={blockToDeleteId}
-        handleDeleteBlock={handleDeleteBlock}
-        closeModal={() => setEditBlock(null)}
+        isOpen={editBlock && !isPostModalOpen}
+        closeModal={() => {
+          setEditBlock(null);
+        }}
         selectedBlocksheet={editBlock}
         editBlock={editBlock}
         setEditBlock={setEditBlock}
-        handleSaveChanges={handleUpdateBlocksheet}
+        handleSaveChanges={handleSaveChanges}
         users={users}
-        user={user}
-        setSelectedBlockId={setSelectedBlockId}
+        handleDeleteBlock={handleDeleteBlock}
       />
     </Box>
   );
-}
-export default Home;
+};
+
+export default MyBlocks;

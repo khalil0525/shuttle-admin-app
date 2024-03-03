@@ -23,7 +23,7 @@ import { useSnackbar } from "../../context/SnackbarProvider";
 
 import RouteManagement from "../../components/RouteManagement/RouteManagment";
 
-import FormSubmissionManagement from "../../components/FormSubmissionManagement/FormSubmissionManagement";
+import DispatchReportManagement from "../../components/DispatchReportManagement/DispatchReportManagement";
 import DispatchForm from "../../components/DispatchForm";
 import ResourceManagement from "../../components/ResourceManagement/ResourceManagment";
 import RouteDashboard from "../../components/RouteManagement/RouteDashboard/RouteDashboard";
@@ -250,7 +250,7 @@ function Dashboard({
               </Stack>
             )}
             {activeTab === "submissions" && (
-              <FormSubmissionManagement user={user} />
+              <DispatchReportManagement user={user} />
             )}{" "}
             {activeTab === "resources" && <ResourceManagement user={user} />}
           </Stack>

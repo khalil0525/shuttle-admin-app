@@ -12,6 +12,7 @@
     "@testing-library/user-event": "^13.5.0",
     "aws-sdk": "^2.1507.0",
     "axios": "^1.4.0",
+    "dayjs": "^1.11.10",
     "dotenv": "^16.3.1",
     "framer-motion": "^10.15.1",
     "js-cookie": "^3.0.5",

@@ -21,10 +21,12 @@ import axios from "axios";
 
 import { useSnackbar } from "../../context/SnackbarProvider";
 import UserManagement from "../../components/UserManagement/UserManagement";
+import BlocksheetManagement from "../../components/BlocksheetManagement/BlocksheetManagement";
 
 function Admin({ socket, logout, user, changePasswordWithToken }) {
   const [activeTab, setActiveTab] = useState("user");
   const [users, setUsers] = useState([]);
+  const [scheduleBlocks, setScheduleBlocks] = useState([]);
   const [newUser, setNewUser] = useState({
     name: "",
     email: "",
@@ -34,21 +36,53 @@ function Admin({ socket, logout, user, changePasswordWithToken }) {
   const [editUser, setEditUser] = useState({
     isAdmin: false,
   });
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [newBlock, setNewBlock] = useState({
+    type: "",
+    term: "",
+    date: null,
+    startTime: null,
+    endTime: null,
+    name: "",
+    ownerId: null,
+  });
+
+  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+  const [isBlocksheetModalOpen, setIsBlocksheetModalOpen] = useState(false);
   const [isValidEmailFormat, setIsValidEmailFormat] = useState(false);
   const [isValidNameFormat, setIsValidNameFormat] = useState(true);
   const [userToDeleteId, setUserToDeleteId] = useState(null);
   const [userToResetPasswordId, setUserToResetPasswordId] = useState(null);
+  const [blockToDeleteId, setBlockToDeleteId] = useState(null);
+
+  const [currentWeek, setCurrentWeek] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [blockSheetUsers, setBlockSheetUsers] = useState([]);
+  const [editBlock, setEditBlock] = useState(null);
+
   const { showSuccessToast, showErrorToast } = useSnackbar();
+  const handleWeekChange = (change) => {
+    setCurrentWeek(currentWeek + change);
+  };
 
   useEffect(() => {
     fetchUsers();
+    fetchScheduleBlocks();
+    fetchBlockSheetUsers();
   }, []);
 
   const fetchUsers = async () => {
     try {
       const { data } = await axios.get("/auth/users");
       setUsers(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const fetchBlockSheetUsers = async () => {
+    try {
+      const { data } = await axios.get("/auth/block/users");
+      setBlockSheetUsers(data);
     } catch (error) {
       console.error(error);
     }
@@ -151,8 +185,71 @@ function Admin({ socket, logout, user, changePasswordWithToken }) {
   }, [newUser.name]);
 
   const closeModal = () => {
-    setIsModalOpen(false);
+    setIsUserModalOpen(false);
     setNewUser({ email: "", password: "", isAdmin: false, name: "" });
+  };
+  const fetchScheduleBlocks = async () => {
+    try {
+      const { data } = await axios.get("/api/blocksheet");
+      console.log(data);
+      setScheduleBlocks(data.scheduleBlocks);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleDeleteBlock = async () => {
+    try {
+      setIsLoading(true);
+      await axios.delete(`/api/blocksheet/${editBlock.id}`);
+      showSuccessToast("Block successfully deleted!");
+      setScheduleBlocks((prev) => prev.filter((sb) => sb.id !== editBlock.id));
+      setEditBlock(null);
+    } catch (error) {
+      console.error(error);
+      showErrorToast(error.response.data.error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCreateBlocksheet = async (block) => {
+    try {
+      setIsLoading(true);
+      await axios.post(`/api/blocksheet`, { block });
+      showSuccessToast("Block successfully created!");
+      setScheduleBlocks((prev) => [block, ...prev]);
+      return true;
+    } catch (error) {
+      console.error(error);
+      showErrorToast(error.response.data.error);
+      throw new Error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUpdateBlocksheet = async () => {
+    try {
+      setIsLoading(true);
+      await axios.put(`/api/blocksheet/${editBlock.id}`, {
+        scheduleBlockData: editBlock,
+      });
+
+      setScheduleBlocks((prev) => {
+        const updatedBlocks = prev.map((block) =>
+          block.id === editBlock.id ? editBlock : block
+        );
+        return updatedBlocks;
+      });
+      setEditBlock(false);
+      showSuccessToast("Block successfully edited!");
+    } catch (error) {
+      showErrorToast(error.response.data.error);
+      throw new Error(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
   return (
     <Box>
@@ -177,6 +274,15 @@ function Admin({ socket, logout, user, changePasswordWithToken }) {
                 mb={{ base: 2, md: 0 }}
                 mr={{ base: 0, md: 2 }}>
                 User Management
+              </Button>{" "}
+              <Button
+                color="text"
+                bg="compBg"
+                variant={activeTab === "user" ? "solid" : "outline"}
+                onClick={() => setActiveTab("blocksheet")}
+                mb={{ base: 2, md: 0 }}
+                mr={{ base: 0, md: 2 }}>
+                Blocksheet Management
               </Button>
             </Flex>
             {activeTab === "user" && (
@@ -184,7 +290,7 @@ function Admin({ socket, logout, user, changePasswordWithToken }) {
                 users={users}
                 handleDeleteUser={handleDeleteUser}
                 updateUser={updateUser}
-                openModal={setIsModalOpen}
+                openModal={setIsUserModalOpen}
                 setEditUser={setEditUser}
                 editUser={editUser}
                 setUserToDeleteId={setUserToDeleteId}
@@ -194,11 +300,33 @@ function Admin({ socket, logout, user, changePasswordWithToken }) {
                 handleResetPassword={handleResetPassword}
               />
             )}
+            {activeTab === "blocksheet" && (
+              <BlocksheetManagement
+                scheduleBlocks={scheduleBlocks}
+                handleDeleteBlock={handleDeleteBlock}
+                openModal={setIsBlocksheetModalOpen}
+                isOpen={isBlocksheetModalOpen}
+                createBlock={handleCreateBlocksheet}
+                updateBlocksheet={handleUpdateBlocksheet}
+                setEditBlock={setEditBlock}
+                editBlock={editBlock}
+                setBlockToDeleteId={setBlockToDeleteId}
+                blockToDeleteId={blockToDeleteId}
+                setNewBlock={setNewBlock}
+                newBlock={newBlock}
+                users={blockSheetUsers}
+                isLoading={isLoading}
+                handleWeekChange={handleWeekChange}
+                setCurrentWeek={setCurrentWeek}
+                user={user}
+                currentWeek={currentWeek}
+              />
+            )}
           </Stack>
         </Box>
       </Center>
       <Modal
-        isOpen={isModalOpen}
+        isOpen={isUserModalOpen}
         onClose={closeModal}>
         <ModalOverlay />
         <ModalContent

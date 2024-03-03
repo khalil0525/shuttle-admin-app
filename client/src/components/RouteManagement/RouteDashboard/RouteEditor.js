@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Select,
@@ -8,23 +8,23 @@ import {
   Divider,
   Text,
   Flex,
-} from '@chakra-ui/react';
+} from "@chakra-ui/react";
 
 function RouteEditor({ route, onUpdate, handleServiceUpdateDelete }) {
   const [primaryStatus, setPrimaryStatus] = useState(
-    route?.serviceUpdates[0]?.type || 'On or Close'
+    route?.serviceUpdates[0]?.type || "On or Close"
   );
   const [primaryServiceUpdateText, setPrimaryServiceUpdateText] = useState(
-    route?.serviceUpdates[0]?.serviceUpdateText || ''
+    route?.serviceUpdates[0]?.serviceUpdateText || ""
   );
   const [primaryExpirationDate, setPrimaryExpirationDate] = useState(
     route?.serviceUpdates[0]?.expiration
       ? new Date(route.serviceUpdates[0].expiration).toISOString().slice(0, 16)
-      : ''
+      : ""
   );
 
   const [secondaryServiceUpdateText, setSecondaryServiceUpdateText] = useState(
-    route?.serviceUpdates[1]?.serviceUpdateText || ''
+    route?.serviceUpdates[1]?.serviceUpdateText || ""
   );
 
   const [isSecondUpdate, setIsSecondUpdate] = useState(
@@ -36,11 +36,15 @@ function RouteEditor({ route, onUpdate, handleServiceUpdateDelete }) {
   };
 
   const handlePrimaryServiceUpdateStatusChange = (e) => {
-    if (['Delays', 'On or Close', 'No Service'].includes(e.target.value)) {
-      setPrimaryServiceUpdateText('');
-      setPrimaryExpirationDate('');
+    if (
+      ["Delays", "On or Close", "No Service", "Cancelled"].includes(
+        e.target.value
+      )
+    ) {
+      setPrimaryServiceUpdateText("");
+      setPrimaryExpirationDate("");
       setIsSecondUpdate(false);
-      setSecondaryServiceUpdateText('');
+      setSecondaryServiceUpdateText("");
     }
     setPrimaryStatus(e.target.value);
   };
@@ -50,7 +54,7 @@ function RouteEditor({ route, onUpdate, handleServiceUpdateDelete }) {
       await handleServiceUpdateDelete(route.id, route.serviceUpdates[1].id);
     }
     setIsSecondUpdate(false);
-    setSecondaryServiceUpdateText('');
+    setSecondaryServiceUpdateText("");
   };
   const handleUpdateRoute = async () => {
     await onUpdate(
@@ -60,7 +64,7 @@ function RouteEditor({ route, onUpdate, handleServiceUpdateDelete }) {
         expiration: primaryExpirationDate.length ? primaryExpirationDate : null,
       },
       {
-        type: isSecondUpdate ? 'Delays' : '',
+        type: isSecondUpdate ? "Delays" : "",
         serviceUpdateText: secondaryServiceUpdateText,
         expiration: null,
       }
@@ -77,9 +81,12 @@ function RouteEditor({ route, onUpdate, handleServiceUpdateDelete }) {
           <option value="Delays">Delays</option>
           <option value="No Service">No Service</option>
           <option value="Planned Detour">Planned Detour</option>
+          <option value="Cancelled">Cancelled</option>
         </Select>
 
-        {(primaryStatus === 'Planned Detour' || primaryStatus === 'Delays') && (
+        {(primaryStatus === "Planned Detour" ||
+          primaryStatus === "Delays" ||
+          primaryStatus === "Cancelled") && (
           <Textarea
             mb={4}
             placeholder="Service Update Text"
@@ -88,7 +95,7 @@ function RouteEditor({ route, onUpdate, handleServiceUpdateDelete }) {
           />
         )}
 
-        {primaryStatus === 'Planned Detour' && (
+        {primaryStatus === "Planned Detour" && (
           <Input
             mb={4}
             type="datetime-local"
@@ -99,12 +106,12 @@ function RouteEditor({ route, onUpdate, handleServiceUpdateDelete }) {
 
         <Divider />
 
-        {primaryStatus === 'Planned Detour' && !isSecondUpdate && (
+        {primaryStatus === "Planned Detour" && !isSecondUpdate && (
           <Button
             colorScheme="blue"
             size="sm"
             onClick={handleAddServiceUpdate}>
-            {primaryStatus === 'Delays' ? 'Add Planned Detour' : 'Add Delays'}
+            {primaryStatus === "Delays" ? "Add Planned Detour" : "Add Delays"}
           </Button>
         )}
 
@@ -116,7 +123,7 @@ function RouteEditor({ route, onUpdate, handleServiceUpdateDelete }) {
               Delays
             </Text>
 
-            {primaryStatus === 'Planned Detour' && (
+            {primaryStatus === "Planned Detour" && (
               <Textarea
                 mb={4}
                 placeholder="Service Update Text"
