@@ -62,7 +62,7 @@ router.post("/user/invite", async (req, res) => {
     const mailConfigurations = {
       from: process.env.NODEMAILER_EMAIL,
       to: email,
-      subject: "Shuttle Admin App (Khalil Collins)",
+      subject: "OCC Transport Portal Login",
       html: `
       <html>
       <head>
@@ -104,7 +104,7 @@ router.post("/user/invite", async (req, res) => {
       <body>
         <div class="container">
           <div class="header">
-            <h2>Shuttle admin app!</h2>
+            <h2>Welcome to OCC Transport!</h2>
           </div>
           <div class="content">
             <p>Here is the link to set up your account:</p>
@@ -112,7 +112,7 @@ router.post("/user/invite", async (req, res) => {
               <a href="${
                 process.env.env === "development"
                   ? "http://localhost:3000"
-                  : "https://bus-routing-portal-prod-18d532a8f2ff.herokuapp.com"
+                  : "https://portal.occtransport.org"
               }/set-up-account?token=${token}" class="button">
                 Set Up Account
               </a>
@@ -337,7 +337,7 @@ router.post("/login", async (req, res, next) => {
           maxAge: 7 * 24 * 60 * 60,
           sameSite: "lax",
           secure: process.env.NODE_ENV === "production",
-          domain: "bus-routing-portal-prod-18d532a8f2ff.herokuapp.com",
+          domain: "occt-dispatch-website-006ef2bb4dfc.herokuapp.com",
         })
       );
       const origin = req.get("origin");
@@ -395,6 +395,25 @@ router.get("/users", async (req, res, next) => {
         id: { [Op.ne]: id },
       },
       include: [{ model: Permission, as: "permissions" }],
+    });
+
+    res.json(users);
+  } catch (error) {
+    next(error);
+  }
+});
+router.get("/block/users", async (req, res, next) => {
+  try {
+    const { isAdmin, id } = req.user;
+
+    if (!isAdmin) {
+      return res.status(403).json({ error: "Permission denied" });
+    }
+
+    const users = await User.findAll({
+      attributes: {
+        exclude: ["password", "resetToken", "resetTokenExpiresAt"],
+      },
     });
 
     res.json(users);
@@ -629,7 +648,7 @@ router.post("/password/recover", async (req, res) => {
 					<a href="${
             process.env.env === "development"
               ? "http://localhost:3000"
-              : "https://bus-routing-portal-prod-18d532a8f2ff.herokuapp.com"
+              : "https://portal.occtransport.org"
           }/change-password?token=${token}" class="button">
 					  Reset Password
 					</a>
@@ -736,7 +755,7 @@ router.post("/password/reset/:userId", async (req, res) => {
               <a href="${
                 process.env.env === "development"
                   ? "http://localhost:3000"
-                  : "https://bus-routing-portal-prod-18d532a8f2ff.herokuapp.com"
+                  : "https://portal.occtransport.org"
               }/reset-password?token=${token}" class="button">
                 Reset Password
               </a>

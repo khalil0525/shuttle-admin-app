@@ -119,7 +119,8 @@ function LoginPage({ login, recoverPassword }) {
     const getLoginPhoto = async () => {
       try {
         const { data } = await axios.get(`/api/images/random`);
-        setBackgroundImage(data.link);
+        console.log(data);
+        setBackgroundImage(data?.link);
       } catch (error) {
         console.error(error);
         setBackgroundImage(null);

@@ -1,67 +1,71 @@
-const User = require('./user');
-const Route = require('./route');
-const ServiceUpdate = require('./serviceUpdate');
-const Invite = require('./invite');
-const FullRun = require('./fullRun');
-const DispatchReport = require('./dispatchReport');
-const Resource = require('./resource');
-const ResourceAttachment = require('./resourceAttachment');
-const Permission = require('./permission');
-const Image = require('./image');
-const TrainerResource = require('./trainerResource');
-const TrainerResourceAttachment = require('./trainerResourceAttachment');
-const DispatchRouteLog = require('./dispatchRouteLog');
-const UserDispatchFollowUp = require('./userDispatchFollowUp');
-Route.hasMany(ServiceUpdate, { onDelete: 'CASCADE' });
+const User = require("./user");
+const Route = require("./route");
+const ServiceUpdate = require("./serviceUpdate");
+const Invite = require("./invite");
+const FullRun = require("./fullRun");
+const DispatchReport = require("./dispatchReport");
+const Resource = require("./resource");
+const ResourceAttachment = require("./resourceAttachment");
+const Permission = require("./permission");
+const Image = require("./image");
+const TrainerResource = require("./trainerResource");
+const TrainerResourceAttachment = require("./trainerResourceAttachment");
+const DispatchRouteLog = require("./dispatchRouteLog");
+const UserDispatchFollowUp = require("./userDispatchFollowUp");
+const ScheduleBlock = require("./scheduleBlock");
+Route.hasMany(ServiceUpdate, { onDelete: "CASCADE" });
 ServiceUpdate.belongsTo(Route);
 
-User.hasMany(Invite, { foreignKey: 'userId' });
-Invite.belongsTo(User, { foreignKey: 'userId' });
+User.hasMany(Invite, { foreignKey: "userId" });
+Invite.belongsTo(User, { foreignKey: "userId" });
 
-User.hasMany(DispatchReport, { onDelete: 'CASCADE' });
+User.hasMany(DispatchReport, { onDelete: "CASCADE" });
 DispatchReport.belongsTo(User);
 
-User.hasMany(FullRun, { onDelete: 'CASCADE' });
+User.hasMany(FullRun, { onDelete: "CASCADE" });
 FullRun.belongsTo(User);
-User.hasMany(Permission, { onDelete: 'CASCADE' });
-Permission.belongsTo(User, { foreignKey: 'userId' });
+User.hasMany(Permission, { onDelete: "CASCADE" });
+Permission.belongsTo(User, { foreignKey: "userId" });
 
 Resource.hasMany(ResourceAttachment, {
-  as: 'attachments',
-  foreignKey: 'resourceId',
-  onDelete: 'CASCADE',
+  as: "attachments",
+  foreignKey: "resourceId",
+  onDelete: "CASCADE",
 });
-ResourceAttachment.belongsTo(Resource, { foreignKey: 'resourceId' });
+ResourceAttachment.belongsTo(Resource, { foreignKey: "resourceId" });
 
 TrainerResource.hasMany(TrainerResourceAttachment, {
-  as: 'attachments',
-  foreignKey: 'trainerResourceId',
-  onDelete: 'CASCADE',
+  as: "attachments",
+  foreignKey: "trainerResourceId",
+  onDelete: "CASCADE",
 });
 TrainerResourceAttachment.belongsTo(TrainerResource, {
-  foreignKey: 'trainerResourceId',
+  foreignKey: "trainerResourceId",
 });
 User.hasMany(DispatchRouteLog, {
-  foreignKey: 'userId',
+  foreignKey: "userId",
 });
 DispatchRouteLog.belongsTo(User, {
-  foreignKey: 'userId',
+  foreignKey: "userId",
 });
 Route.hasMany(DispatchRouteLog, {
-  foreignKey: 'routeId',
+  foreignKey: "routeId",
 });
 DispatchRouteLog.belongsTo(Route, {
-  foreignKey: 'routeId',
+  foreignKey: "routeId",
 });
 User.belongsToMany(DispatchReport, {
   through: UserDispatchFollowUp,
-  foreignKey: 'userId',
+  foreignKey: "userId",
 });
 DispatchReport.belongsToMany(User, {
   through: UserDispatchFollowUp,
-  foreignKey: 'dispatchReportId',
+  foreignKey: "dispatchReportId",
 });
-
+User.hasMany(ScheduleBlock, { foreignKey: "ownerId" });
+ScheduleBlock.belongsTo(User, {
+  foreignKey: "ownerId",
+});
 module.exports = {
   User,
   Route,
@@ -77,4 +81,5 @@ module.exports = {
   TrainerResourceAttachment,
   DispatchRouteLog,
   UserDispatchFollowUp,
+  ScheduleBlock,
 };

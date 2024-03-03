@@ -6,6 +6,7 @@ const validTypeValues = [
   "Delays",
   "No Service",
   "Planned Detour",
+  "Cancelled",
 ];
 
 router.post("/:routeId", async (req, res, next) => {
@@ -57,10 +58,13 @@ router.post("/:routeId", async (req, res, next) => {
         return res.status(400).json({
           error: "Expiration date is needed for planned detour updates",
         });
-      } else if (secondaryServiceUpdate.type in ["On or Close", "No Service"]) {
+      } else if (
+        secondaryServiceUpdate.type in
+        ["On or Close", "No Service", "Cancelled"]
+      ) {
         return res.status(400).json({
           error:
-            "'On or Close' and 'No Service' cannot be set as a second service update.",
+            "'On or Close', 'No Service' and 'Cancelled' cannot be set as a second service update.",
         });
       }
       const firstServiceUpdate = {
@@ -111,7 +115,8 @@ router.post("/:routeId", async (req, res, next) => {
       }
       if (
         (primaryServiceUpdate.type === "Planned Detour" ||
-          primaryServiceUpdate.type == "Delays") &&
+          primaryServiceUpdate.type == "Delays" ||
+          primaryServiceUpdate.type == "Cancelled") &&
         !primaryServiceUpdate.serviceUpdateText
       ) {
         return res.status(400).json({
@@ -300,7 +305,8 @@ router.put("/:routeId", async (req, res, next) => {
 
       if (
         (primaryServiceUpdate.type === "Planned Detour" ||
-          primaryServiceUpdate.type === "Delays") &&
+          primaryServiceUpdate.type === "Delays" ||
+          primaryServiceUpdate.type === "Cancelled") &&
         !primaryServiceUpdate.serviceUpdateText.length
       ) {
         return res.status(400).json({

@@ -23,6 +23,10 @@ import { Box, Flex, Spinner } from "@chakra-ui/react";
 import Website from "./views/Website/Website";
 import Training from "./views/Training/Training";
 import Reset from "./components/Authentication/Reset";
+import MyBlocks from "./views/MyBlocks/MyBlocks";
+import Tradeboard from "./views/Tradeboard/Tradeboard";
+import ViewBlock from "./components/MyBlocksManagement/ViewBlock";
+import Whiteboard from "./views/Whiteboard/Whiteboard";
 
 const currentLocation = window.location;
 
@@ -253,7 +257,7 @@ function AppRouter({
               path="/"
               element={
                 user.id ? (
-                  <Home />
+                  <Home user={user} />
                 ) : (
                   <LoginPage
                     login={login}
@@ -313,7 +317,7 @@ function AppRouter({
                   />
                 )
               }
-            />{" "}
+            />
             <Route
               path="/settings"
               element={
@@ -380,10 +384,7 @@ function AppRouter({
                   (perm) => perm.tabName === "whiteboard"
                 ).canView ||
                   user.isAdmin) ? (
-                  <Navigate
-                    to="/"
-                    replace={true}
-                  />
+                  <Whiteboard />
                 ) : (
                   <Navigate
                     to="/"
@@ -400,6 +401,50 @@ function AppRouter({
                   .canView ||
                   user.isAdmin) ? (
                   <Website />
+                ) : (
+                  <Navigate
+                    to="/"
+                    replace={true}
+                  />
+                )
+              }
+            />
+            <Route
+              path="/my-blocks"
+              element={
+                user.id ? (
+                  <MyBlocks user={user} />
+                ) : (
+                  <Navigate
+                    to="/"
+                    replace={true}
+                  />
+                )
+              }
+            />
+            <Route
+              path="/tradeboard"
+              element={
+                user.id ? (
+                  <Tradeboard user={user} />
+                ) : (
+                  <Navigate
+                    to="/"
+                    replace={true}
+                  />
+                )
+              }
+            />
+            <Route
+              path="/tradeboard/:blockId"
+              element={
+                user.id && user.isAdmin ? (
+                  <ViewBlock
+                    socket={socket}
+                    user={user}
+                    logout={logout}
+                    changePasswordWithToken={changePasswordWithToken}
+                  />
                 ) : (
                   <Navigate
                     to="/"

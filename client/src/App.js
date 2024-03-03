@@ -1,22 +1,22 @@
-import './App.css';
-import React, { useEffect, useState } from 'react';
+import "./App.css";
+import React, { useEffect, useState } from "react";
 
-import { SnackbarProvider } from './context/SnackbarProvider';
-import { ChakraProvider, extendTheme, ColorModeScript } from '@chakra-ui/react';
-import AppRouter from './AppRouter';
+import { SnackbarProvider } from "./context/SnackbarProvider";
+import { ChakraProvider, extendTheme, ColorModeScript } from "@chakra-ui/react";
+import AppRouter from "./AppRouter";
 
 const lightTheme = extendTheme({
   components: {
     Link: {
       baseStyle: {
-        color: '#fff',
-        textDecoration: 'none',
+        color: "#fff",
+        textDecoration: "none",
         _hover: {
-          color: '#666666',
-          textDecoration: 'none',
+          color: "#666666",
+          textDecoration: "none",
         },
         _active: {
-          color: '#000',
+          color: "#000",
         },
       },
     },
@@ -24,13 +24,13 @@ const lightTheme = extendTheme({
 
   semanticTokens: {
     colors: {
-      hoverBg: { default: 'gray.200' },
-      hoverText: { default: 'gray.600' },
+      hoverBg: { default: "gray.200" },
+      hoverText: { default: "gray.600" },
       compBg: {
-        default: '#fff',
+        default: "#fff",
       },
       text: {
-        default: '#000',
+        default: "#000",
       },
     },
   },
@@ -40,14 +40,14 @@ const darkTheme = extendTheme({
   components: {
     Link: {
       baseStyle: {
-        color: '#333333',
-        textDecoration: 'none',
+        color: "#333333",
+        textDecoration: "none",
         _hover: {
-          color: '#fff',
-          textDecoration: 'none',
+          color: "#fff",
+          textDecoration: "none",
         },
         _active: {
-          color: '#000',
+          color: "#000",
         },
       },
     },
@@ -56,20 +56,20 @@ const darkTheme = extendTheme({
   styles: {
     global: {
       option: {
-        backgroundColor: '#333333 !important',
+        backgroundColor: "#333333 !important",
       },
     },
   },
 
   semanticTokens: {
     colors: {
-      hoverBg: { default: 'gray.700' },
-      hoverText: { default: 'gray.200' },
+      hoverBg: { default: "gray.700" },
+      hoverText: { default: "gray.200" },
       compBg: {
-        default: '#333333',
+        default: "#333333",
       },
       text: {
-        default: '#fff',
+        default: "#fff",
       },
     },
   },
@@ -77,23 +77,23 @@ const darkTheme = extendTheme({
 function App() {
   const [themeChange, setThemeChange] = useState(null);
   const [autoThemeMode, setAutoThemeMode] = useState(null);
-  const [themeMode, setThemeMode] = useState('light');
+  const [themeMode, setThemeMode] = useState("light");
 
   const setAndStoreThemeMode = (newThemeMode) => {
     setThemeChange(newThemeMode);
-    localStorage.setItem('themeMode', newThemeMode);
+    localStorage.setItem("themeMode", newThemeMode);
   };
 
   useEffect(() => {
     if (themeChange) {
-      if (themeChange === 'auto') {
+      if (themeChange === "auto") {
         const now = new Date();
         const hours = now.getHours();
 
         if (hours >= 6 && hours < 18) {
-          setAutoThemeMode('light');
+          setAutoThemeMode("light");
         } else {
-          setAutoThemeMode('dark');
+          setAutoThemeMode("dark");
         }
       } else {
         setAutoThemeMode(null);
@@ -104,7 +104,7 @@ function App() {
   }, [themeChange]);
 
   useEffect(() => {
-    const storedThemeMode = localStorage.getItem('themeMode');
+    const storedThemeMode = localStorage.getItem("themeMode");
     if (storedThemeMode) {
       setThemeMode(storedThemeMode);
     }
@@ -114,10 +114,10 @@ function App() {
     <ChakraProvider
       theme={
         autoThemeMode === null
-          ? themeMode === 'light'
+          ? themeMode === "light"
             ? lightTheme
             : darkTheme
-          : autoThemeMode === 'light'
+          : autoThemeMode === "light"
           ? lightTheme
           : darkTheme
       }>
