@@ -104,7 +104,7 @@ router.post("/user/invite", async (req, res) => {
       <body>
         <div class="container">
           <div class="header">
-            <h2>Welcome to OCC Transport!</h2>
+            <h2>Welcome!</h2>
           </div>
           <div class="content">
             <p>Here is the link to set up your account:</p>
@@ -112,7 +112,7 @@ router.post("/user/invite", async (req, res) => {
               <a href="${
                 process.env.env === "development"
                   ? "http://localhost:3000"
-                  : "https://portal.occtransport.org"
+                  : "https://bus-routing-portal-prod-18d532a8f2ff.herokuapp.com/"
               }/set-up-account?token=${token}" class="button">
                 Set Up Account
               </a>
@@ -337,7 +337,7 @@ router.post("/login", async (req, res, next) => {
           maxAge: 7 * 24 * 60 * 60,
           sameSite: "lax",
           secure: process.env.NODE_ENV === "production",
-          domain: "occt-dispatch-website-006ef2bb4dfc.herokuapp.com",
+          domain: "bus-routing-portal-prod-18d532a8f2ff.herokuapp.com",
         })
       );
       const origin = req.get("origin");
@@ -648,7 +648,7 @@ router.post("/password/recover", async (req, res) => {
 					<a href="${
             process.env.env === "development"
               ? "http://localhost:3000"
-              : "https://portal.occtransport.org"
+              : "bus-routing-portal-prod-18d532a8f2ff.herokuapp.com"
           }/change-password?token=${token}" class="button">
 					  Reset Password
 					</a>
@@ -755,7 +755,7 @@ router.post("/password/reset/:userId", async (req, res) => {
               <a href="${
                 process.env.env === "development"
                   ? "http://localhost:3000"
-                  : "https://portal.occtransport.org"
+                  : "https://bus-routing-portal-prod-18d532a8f2ff.herokuapp.com"
               }/reset-password?token=${token}" class="button">
                 Reset Password
               </a>
