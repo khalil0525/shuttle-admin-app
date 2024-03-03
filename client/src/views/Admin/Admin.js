@@ -278,7 +278,7 @@ function Admin({ socket, logout, user, changePasswordWithToken }) {
               <Button
                 color="text"
                 bg="compBg"
-                variant={activeTab === "user" ? "solid" : "outline"}
+                variant={activeTab === "blocksheet" ? "solid" : "outline"}
                 onClick={() => setActiveTab("blocksheet")}
                 mb={{ base: 2, md: 0 }}
                 mr={{ base: 0, md: 2 }}>
