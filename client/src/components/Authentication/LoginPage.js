@@ -25,9 +25,7 @@ function LoginPage({ login, recoverPassword }) {
   const { showErrorToast } = useSnackbar();
   const [backgroundImage, setBackgroundImage] = useState(null);
   const [selectedRole, setSelectedRole] = useState("user");
-  const [email, setEmail] = useState(
-    selectedRole === "admin" ? "testeradmin@test.com" : "testeruser@test.com"
-  );
+  const [email, setEmail] = useState("testeradmin@test.com");
   const [passwordError, setPasswordError] = useState("");
   const validateEmail = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -130,6 +128,11 @@ function LoginPage({ login, recoverPassword }) {
     getLoginPhoto();
   }, []);
 
+  useEffect(() => {
+    setEmail(
+      selectedRole === "admin" ? "testeradmin@test.com" : "testeruser@test.com"
+    );
+  }, [selectedRole]);
   return (
     <Flex
       bg={backgroundImage ? `url(${backgroundImage})` : "#2596be"}
