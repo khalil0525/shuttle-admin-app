@@ -17,7 +17,7 @@ const db =
 
         dialectOptions: {
           ssl: {
-            require: false,
+            require: true,
             rejectUnauthorized: false,
           },
         },
