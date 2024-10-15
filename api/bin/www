@@ -51,7 +51,7 @@ io.on("connection", (socket) => {
 
 sessionStore
   .sync()
-  // .then(() => db.sync())
+  .then(() => db.sync())
   .then(() => {
     // Ensure all users have their permissions set
     return ensureAllUsersHavePermissions();
