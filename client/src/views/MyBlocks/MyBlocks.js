@@ -109,9 +109,6 @@ const MyBlocks = ({ user }) => {
       showErrorToast(error.response.data.error);
     }
   };
-  if (true) {
-    return <Box></Box>;
-  }
 
   return (
     <Box>
